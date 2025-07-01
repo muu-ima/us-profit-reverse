@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import ChatIcon from "./components/ChatIcon";
 import { useEffect, useState } from "react";
 import { getCheapestShipping, ShippingData } from "@/lib/shipping";
 import ExchangeRate from "./components/ExchangeRate";
@@ -195,7 +196,7 @@ export default function Page() {
           />
         </div>
         <div>
-          <label className="block font-semibold mb-1">売値 (£) </label>
+          <label className="block font-semibold mb-1">売値 (＄) </label>
           <input
             type="number"
             value={sellingPrice}
@@ -323,7 +324,8 @@ export default function Page() {
           />
         )}
       </div>
-
+      {/* チャットアイコンをここで表示 */}
+      <ChatIcon />
     </div>
   );
 }

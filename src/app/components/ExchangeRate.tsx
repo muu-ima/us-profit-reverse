@@ -31,7 +31,7 @@ export default function ExchangeRate({
 
      return (
     <div className="bg-blue-100 border border-blue-400 rounded-md p-4 mb-4">
-      <h2 className="text-xl font-bold">現在の為替レート（手数料込み）</h2>
+      <h2 className="text-xl font-bold">現在の為替レート</h2>
       <p>
         USD → JPY  :{" "}
         {adjustedRate !== null ? `${adjustedRate?.toFixed(2)}円` : '取得中...'}
