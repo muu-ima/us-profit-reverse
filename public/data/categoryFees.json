@@ -1,0 +1,44 @@
+[
+  {
+    "label": "その他全般",
+    "value": 12.7,
+    "categories": [
+      "Antiques",
+      "Vinyl Records",
+      "Collectibles(General)",
+      "Consumer Electronics > Accessories",
+      "Video Game Accessories",
+      "eBay Motors > General"
+    ]
+  },
+    {
+    "label": "書籍・映画・音楽",
+    "value": 15.3,
+    "categories": ["Books & Magazines", "Movies & TV", "Music"]
+  },
+  {
+    "label": "カメラ・レンズ",
+    "value": 9.35,
+    "categories" : ["Most Cameras & Photo categories"]
+  },
+  {
+    "label": "ギター・ベース",
+    "value": 6.7,
+    "categories": ["Musical Instruments & Gear > Guitars & Basses"]
+  },
+    {
+    "label": "トレカ",
+    "value": 12.35,
+    "categories": ["Trading Cards", "Comic Books & Memorabilia"]
+  },
+  {
+    "label": "時計",
+    "value": 13.0,
+    "categories": ["Jewelry & Watches"]
+  },
+  {
+    "label": "アクセサリー",
+    "value": 12.5,
+    "categories": ["Watches, Parts & Accessories"]
+  }
+]

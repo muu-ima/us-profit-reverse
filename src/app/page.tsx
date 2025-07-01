@@ -1,103 +1,329 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React from "react";
+import { useEffect, useState } from "react";
+import { getCheapestShipping, ShippingData } from "@/lib/shipping";
+import ExchangeRate from "./components/ExchangeRate";
+import Result from "./components/Result";
+import {
+  calculateCategoryFee,
+  // convertShippingPriceToJPY,
+  calculateActualCost,
+  calculateGrossProfit,
+  calculateProfitMargin,
+  calculateFinalProfitDetail,
+} from "@/lib/profitCalc";
+
+
+// import { calculateFinalProfitDetail } from "@/lib/profitCalc";
+import FinalResult from "./components/FinalResult";
+
+
+// ここから型定義を追加
+type ShippingResult = {
+  method: string;
+  price: number | null;
+};
+
+type CategoryFeeType = {
+  label: string;
+  value: number;
+  categories: string[];
+};
+
+type CalcResult = {
+  shippingJPY: number,
+  categoryFeeJPY: number;
+  actualCost: number; // 総コスト（円）
+  grossProfit: number; // 粗利益（円）
+  profitMargin: number;// 利益率(%)
+  method: string; //選択配送方法
+  sellingPriceGBP: number; // 入力売値(GBP)
+  rate: number; // 為替レート
+  sellingPriceJPY: number; //売値(円換算)
+}
+
+
+export default function Page() {
+  // State管理
+  const [shippingRates, setShippingRates] = useState<ShippingData | null>(null);
+  const [costPrice, setCostPrice] = useState<number | "">("");
+  const [sellingPrice, setSellingPrice] = useState<number | "">("");
+  const [weight, setWeight] = useState<number | null>(null);
+  const [dimensions, setDimensions] = useState({
+    length: 0,
+    width: 0,
+    height: 0,
+  });
+  const [rate, setRate] = useState<number | null>(null);
+  const [categoryOptions, setCategoryOptions] = useState<CategoryFeeType[]>([]);
+  const [selectedCategoryFee, setSelectedCategoryFee] = useState<number | "">(
+    ""
+  );
+  const [result, setResult] = useState<ShippingResult | null>(null);
+  const [calcResult, setCalcResult] = useState<CalcResult | null>(null);
+
+  // 配送料データ読み込み
+  useEffect(() => {
+    fetch("/data/shipping.json")
+      .then((res) => res.json())
+      .then((data) => setShippingRates(data));
+  }, []);
+
+  // 計算結果用のuseEffect
+  useEffect(() => {
+    if (
+      sellingPrice !== "" &&
+      costPrice !== "" &&
+      rate !== null &&
+      weight !== null &&
+      result !== null &&
+      result.price !== null &&
+      selectedCategoryFee !== ""
+    ) {
+      //配送料JPYに換算
+      const shippingJPY = result.price ?? 0;
+
+      // ここで売値の変換をする
+      const sellingPriceGBP = typeof sellingPrice === "number" ? sellingPrice : 0;
+      // 円換算は掛け算
+      const sellingPriceJPY = sellingPriceGBP * (rate ?? 0);
+      //カテゴリ手数料JPY計算
+      const categoryFeeJPY = calculateCategoryFee(
+        typeof sellingPrice === "number" && rate !== null
+          ? sellingPrice * rate  // ← GBP → 円 にする
+          : 0,
+        typeof selectedCategoryFee === "number" ? selectedCategoryFee : 0
+      );
+
+
+      //実費合計
+      const actualCost = calculateActualCost(
+        typeof costPrice === "number" ? costPrice : 0,
+        shippingJPY,
+        categoryFeeJPY
+      );
+      //粗利計算
+      const grossProfit = calculateGrossProfit(
+        typeof sellingPrice === "number" ? sellingPrice : 0,
+        actualCost
+      );
+      //利益率計算
+      const profitMargin = calculateProfitMargin(grossProfit,
+        typeof sellingPrice === "number" ? sellingPrice : 0
+      );
+
+      setCalcResult({
+        shippingJPY,
+        categoryFeeJPY,
+        actualCost,
+        grossProfit,
+        profitMargin,
+        method: result.method,
+        sellingPriceGBP,
+        sellingPriceJPY,
+        rate
+      });
+
+    }
+  }, [sellingPrice, costPrice, rate, weight, result, selectedCategoryFee]);
+
+  useEffect(() => {
+    fetch("/data/categoryFees.json")
+      .then((res) => res.json())
+      .then((data) => setCategoryOptions(data));
+  }, []);
+
+  useEffect(() => {
+    if (rate !== null) {
+      console.log(`最新為替レート：${rate}`);
+    }
+  }, [rate]);
+
+  useEffect(() => {
+    if (shippingRates && weight !== null && weight > 0) {
+      const cheapest = getCheapestShipping(shippingRates, weight, dimensions);
+      setResult(cheapest);
+    }
+  }, [shippingRates, weight, dimensions]);
+
+  const final = calcResult
+    ? calculateFinalProfitDetail({
+      sellingPrice: typeof sellingPrice === "number" ? sellingPrice : 0,
+      costPrice: typeof costPrice === "number" ? costPrice : 0,
+      shippingJPY: calcResult.shippingJPY,
+      categoryFeeJPY: calcResult.categoryFeeJPY,
+      customsRate: 4, // 関税率
+      platformRate: 0, // 任意
+      exchangeRateGBPtoJPY: rate ?? undefined,
+    })
+    : null;
+
+
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="p-4 max-w-5xl mx-auto flex flex-col md:flex-row md:space-x-8 space-y-8 md:space-y-0">
+      <div className="flex-1 flex flex-col space-y-4">
+        {/* 為替レート表示コンポーネント */}
+        <ExchangeRate onRateChange={setRate} />
+        <div>
+          <label className="block font-semibold mb-1">仕入れ値 (円) </label>
+          <input
+            type="number"
+            step="10"
+            min="10"
+            value={costPrice}
+            onChange={(e) => {
+              const raw = e.target.value;
+              //空なら空にする
+              if (raw === "") {
+                setCostPrice("");
+                return;
+              }
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+              //数値化
+              let num = Number(raw);
+
+              //マイナスなら0に
+              if (num < 0) num = 0;
+
+
+              setCostPrice(num);
+            }}
+            placeholder="仕入れ値"
+            className="w-full px-3 py-2 border rounded-md"
+          />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+        <div>
+          <label className="block font-semibold mb-1">売値 (£) </label>
+          <input
+            type="number"
+            value={sellingPrice}
+            onChange={(e) =>
+              setSellingPrice(e.target.value === "" ? "" : Number(e.target.value))
+            }
+            placeholder="売値"
+            className="w-full px-3 py-2 border rounded-md"
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
+          {rate !== null && sellingPrice !== "" && (
+            <p>概算円価格：約 {Math.round(Number(sellingPrice) * rate)} 円</p>
+          )}
+        </div>
+
+        <div>
+          <label className="block font-semibold mb-1">実重量 (g) </label>
+          <input
+            type="number"
+            value={weight ?? ""}
+            onChange={(e) =>
+              setWeight(e.target.value === "" ? null : Number(e.target.value))
+            }
+            placeholder="実重量"
+            className="w-full px-3 py-2 border rounded-md"
           />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
+        </div>
+        <div>
+          <label className="block font-semibold mb-1">サイズ (cm)</label>
+          <div className="grid grid-cols-3 gap-2">
+            <input
+              type="number"
+              value={dimensions.length || ""}
+              onChange={(e) =>
+                setDimensions((prev) => ({
+                  ...prev,
+                  length: Number(e.target.value),
+                }))
+              }
+              placeholder="長さ"
+              className="px-2 py-1 border rounded-md"
+            />
+            <input
+              type="number"
+              value={dimensions.width || ""}
+              onChange={(e) =>
+                setDimensions((prev) => ({
+                  ...prev,
+                  width: Number(e.target.value),
+                }))
+              }
+              placeholder="幅"
+              className="px-2 py-1 border rounded-md"
+            />
+            <input
+              type="number"
+              value={dimensions.height || ""}
+              onChange={(e) =>
+                setDimensions((prev) => ({
+                  ...prev,
+                  height: Number(e.target.value),
+                }))
+              }
+              placeholder="高さ"
+              className="px-2 py-1 border rounded-md"
+            />
+          </div>
+        </div>
+        <div>
+          <label className="block font-semibold mb-1">カテゴリ手数料 </label>
+          <select
+            value={selectedCategoryFee}
+            onChange={(e) => setSelectedCategoryFee(Number(e.target.value))}
+            className="w-full px-3 py-2 border rounded-md"
+          >
+            <option value="">カテゴリを選択してください</option>
+            {categoryOptions.map((cat) => (
+              <option key={cat.label} value={cat.value}>
+                {cat.label} ({cat.value}%)
+              </option>
+            ))}
+          </select>
+        </div>
+
+      </div>
+      {/* 右カラム */}
+      <div className="flex-1 flex flex-col space-y-4">
+        {/* 配送結果と利益結果を右側に移動する */}
+        {/* 配送結果 */}
+        <div className="w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          <p>
+            配送方法: {
+              result === null
+                ? "計算中..."
+                : result.method
+            }
+          </p>
+          <p>
+            配送料: {
+              result === null
+                ? "計算中..."
+                : result.price !== null
+                  ? `${result.price}円`
+                  : "不明"
+            }
+          </p>
+        </div>
+
+
+        {/* 利益結果 */}
+        {rate !== null && sellingPrice !== "" && (
+          <Result
+            originalPriceGBP={typeof sellingPrice === "number" ? sellingPrice : 0}  // ★ 修正
+            priceJPY={typeof sellingPrice === "number" && rate !== null ? sellingPrice * rate : 0}
+            rate={rate}
+            calcResult={calcResult}
           />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        )}
+
+        {final && (
+          <FinalResult
+            shippingMethod={result?.method || ""}
+            shippingJPY={calcResult?.shippingJPY || 0}
+            categoryFeeJPY={calcResult?.categoryFeeJPY || 0}
+            data={final}
+          />
+        )}
+      </div>
+
     </div>
   );
 }
