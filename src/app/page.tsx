@@ -310,7 +310,6 @@ export default function Page() {
           <Result
             originalPriceGBP={typeof sellingPrice === "number" ? sellingPrice : 0}  // ★ 修正
             priceJPY={typeof sellingPrice === "number" && rate !== null ? sellingPrice * rate : 0}
-            rate={rate}
             calcResult={calcResult}
           />
         )}

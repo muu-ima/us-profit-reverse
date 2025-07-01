@@ -15,18 +15,16 @@ type CalcResult = {
 type ResultProps = {
     originalPriceGBP: number; // 入力そのままの GBP
     priceJPY: number; // 追加：計算済みのJPY価格をpropsで受け取る
-    rate: number;         // APIから取得した生レート
     calcResult: CalcResult | null;  // anyを具体的に
 };
 
-export default function Result({ originalPriceGBP, priceJPY, rate,}: ResultProps) {
-    const fee = 3.3; // 為替手数料（固定値でも可、将来的にprops化も可能）
+export default function Result({ originalPriceGBP, priceJPY,}: ResultProps) {
    
        // finalJPYを計算：手数料込みレートで換算
     const finalJPY = originalPriceGBP;
     return (
         <div className="result-box p-4 border rounded bg-gray-50">
-            <p>GBP価格(ポンド): ＄{originalPriceGBP.toFixed(1)}</p>
+            <p>USD価格(ドル): ＄{originalPriceGBP.toFixed(1)}</p>
             <p>円換算価格: ￥{priceJPY.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</p>
             <p className="font-bold text-lg mt-2">概算価格: ￥{finalJPY.toLocaleString()}</p>
         </div>
