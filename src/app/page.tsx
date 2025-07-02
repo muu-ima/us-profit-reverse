@@ -308,7 +308,7 @@ export default function Page() {
         {/* 利益結果 */}
         {rate !== null && sellingPrice !== "" && (
           <Result
-            originalPriceGBP={typeof sellingPrice === "number" ? sellingPrice : 0}  // ★ 修正
+            originalPriceUSD={typeof sellingPrice === "number" ? sellingPrice : 0}  // ★ 修正
             priceJPY={typeof sellingPrice === "number" && rate !== null ? sellingPrice * rate : 0}
             calcResult={calcResult}
           />

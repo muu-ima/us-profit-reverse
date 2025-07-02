@@ -9,7 +9,7 @@ const ChatIcon: React.FC = () => {
        <div
         style={{
           position: "fixed",
-          bottom: 110,
+          top: 150,
           right: 20,
           zIndex: 1000,
           display: "flex",
