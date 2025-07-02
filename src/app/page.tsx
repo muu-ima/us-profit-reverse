@@ -7,12 +7,11 @@ import { getCheapestShipping, ShippingData } from "@/lib/shipping";
 import ExchangeRate from "./components/ExchangeRate";
 import Result from "./components/Result";
 import {
-  calculateCategoryFee,
-  // convertShippingPriceToJPY,
+  calculateFinalProfitDetailUS,
+  calculateCategoryFeeUS,
   calculateActualCost,
   calculateGrossProfit,
   calculateProfitMargin,
-  calculateFinalProfitDetail,
 } from "@/lib/profitCalc";
 
 
@@ -90,9 +89,9 @@ export default function Page() {
       // 円換算は掛け算
       const sellingPriceJPY = sellingPriceGBP * (rate ?? 0);
       //カテゴリ手数料JPY計算
-      const categoryFeeJPY = calculateCategoryFee(
+      const categoryFeeJPY = calculateCategoryFeeUS(
         typeof sellingPrice === "number" && rate !== null
-          ? sellingPrice * rate  // ← GBP → 円 にする
+          ? sellingPrice * rate  // ← USD → 円 にする
           : 0,
         typeof selectedCategoryFee === "number" ? selectedCategoryFee : 0
       );
@@ -148,15 +147,20 @@ export default function Page() {
     }
   }, [shippingRates, weight, dimensions]);
 
+ const categoryFeePercent = (calcResult && sellingPrice && rate)
+  ? (calcResult.categoryFeeJPY / (sellingPrice * rate)) * 100
+  : 0;
+
+
   const final = calcResult
-    ? calculateFinalProfitDetail({
+    ? calculateFinalProfitDetailUS({
       sellingPrice: typeof sellingPrice === "number" ? sellingPrice : 0,
       costPrice: typeof costPrice === "number" ? costPrice : 0,
       shippingJPY: calcResult.shippingJPY,
-      categoryFeeJPY: calcResult.categoryFeeJPY,
-      customsRate: 4, // 関税率
-      platformRate: 0, // 任意
-      exchangeRateGBPtoJPY: rate ?? undefined,
+      categoryFeePercent: categoryFeePercent,
+      paymentFeePercent: 4, // 関税率
+      exchangeRateUSDtoJPY: rate ?? 0,
+      targetMargin: 0.25,
     })
     : null;
 
@@ -320,6 +324,7 @@ export default function Page() {
             shippingJPY={calcResult?.shippingJPY || 0}
             categoryFeeJPY={calcResult?.categoryFeeJPY || 0}
             data={final}
+            exchangeRateUSDtoJPY={rate ?? 0}
           />
         )}
       </div>
