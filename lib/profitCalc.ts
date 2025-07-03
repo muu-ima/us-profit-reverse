@@ -30,7 +30,7 @@ export function calculateFinalProfitDetailUS({
   paymentFeePercent, //%
   exchangeRateUSDtoJPY,
   targetMargin = 0.25,
-  
+
 }: ProfitCalcParamsUS): FinalProfitDetailUS {
   console.log("利益計算に渡すcategoryFeePercent:", categoryFeePercent);
   if (!exchangeRateUSDtoJPY) {
@@ -48,89 +48,91 @@ export function calculateFinalProfitDetailUS({
 
   // 3. 全手数料にかかるTAX (10%)
   const feeTaxUSD = (categoryFeeUSD + paymentFeeUSD) * 0.10;
+  const feeTaxJPY = feeTaxUSD * exchangeRateUSDtoJPY
 
   // 4. 全手数料合計
   const totalFeesUSD = categoryFeeUSD + paymentFeeUSD + feeTaxUSD;
- 
-  // 5. 州税込み売上から手数料引いた粗利益 (USD)
+
+  // 5. 州税込み売上から手数料を引いた粗利益 (USD)
   const grossProfitUSD = sellingPriceInclTax - totalFeesUSD;
 
   //6. Payoneer手数料 (2%)
-  const payoneerFeeUSD = grossProfitUSD > 0 ? grossProfitUSD * 0.02 : 0;
+  const payoneerFeeUSD = grossProfitUSD * 0.02;
+  const payoneerFeeJPY = payoneerFeeUSD * exchangeRateUSDtoJPY;
 
-  //7. 最終USD利益
-  const netProfitUSD = grossProfitUSD - payoneerFeeUSD;
+  //7. 最終利益 (JPY)
+  const netProfitJPY = (grossProfitUSD * exchangeRateUSDtoJPY) - payoneerFeeJPY;
 
-  //8 為替換算
-  const profitJPY = netProfitUSD * exchangeRateUSDtoJPY;
-
-  //9 為替調整　(1USDあたり3.3円引き)
+  //9 為替換算 (JPY)
   const exchangeAdjustmentJPY = sellingPrice * 3.3;
 
   //10 総コスト
-  const totalCostJPY = costPrice + shippingJPY;
+  const categoryFeeJPY = categoryFeeUSD * exchangeRateUSDtoJPY;
+  const paymentFeeJPY = paymentFeeUSD * exchangeRateUSDtoJPY;
+  const totalCostJPY = costPrice + shippingJPY + categoryFeeJPY + paymentFeeJPY;
+
 
   // 利益率は総コスト基準で計算
-  const profitMargin = totalCostJPY === 0 ? 0 : (profitJPY / totalCostJPY) * 100;
+  const profitMargin = totalCostJPY === 0 ? 0 : (netProfitJPY / totalCostJPY) * 100;
 
   //12 損益分岐の推奨売値 (USD)
   const totalCostUSD = totalCostJPY / exchangeRateUSDtoJPY;
   const suggestedPriceUSD = totalCostUSD / (1 - targetMargin);
   const suggestedPriceJPY = suggestedPriceUSD * exchangeRateUSDtoJPY;
-// === Debug Logs ===
-console.log("=== [US 利益計算] ===");
+  // === Debug Logs ===
+  console.log("=== [US 利益計算] ===");
 
-// 🟢 1️⃣ 売値と州税
-console.log(`売値 (USD): ${sellingPrice}`);
-console.log(`州税率: ${stateTaxRate * 100}%`);
-console.log(`州税額 (USD): ${stateTaxUSD}`);
-console.log(`州税込み売上 (USD): ${sellingPriceInclTax}`);
+  // 🟢 1️⃣ 売値と州税
+  console.log(`売値 (USD): ${sellingPrice}`);
+  console.log(`州税率: ${stateTaxRate * 100}%`);
+  console.log(`州税額 (USD): ${stateTaxUSD}`);
+  console.log(`州税込み売上 (USD): ${sellingPriceInclTax}`);
 
-// 🟢 2️⃣ カテゴリ手数料 & 決済手数料
-console.log("------------------------------");
-console.log(`カテゴリ手数料率 (%): ${categoryFeePercent}`);
-console.log(`カテゴリ手数料 (USD): ${categoryFeeUSD}`);
-console.log(`決済手数料率 (%): ${paymentFeePercent}`);
-console.log(`決済手数料 (USD): ${paymentFeeUSD}`);
-console.log(`手数料税 (USD): ${feeTaxUSD}`);
-console.log(`手数料合計 (USD): ${totalFeesUSD}`);
+  // 🟢 2️⃣ カテゴリ手数料 & 決済手数料
+  console.log("------------------------------");
+  console.log(`カテゴリ手数料率 (%): ${categoryFeePercent}`);
+  console.log(`カテゴリ手数料 (USD): ${categoryFeeUSD}`);
+  console.log(`決済手数料率 (%): ${paymentFeePercent}`);
+  console.log(`決済手数料 (USD): ${paymentFeeUSD}`);
+  console.log(`手数料税 (USD): ${feeTaxUSD}`);
+  console.log(`手数料合計 (USD): ${totalFeesUSD}`);
 
-// 🟢 3️⃣ 粗利・最終利益
-console.log("------------------------------");
-console.log(`粗利益 (USD): ${grossProfitUSD}`);
-console.log(`Payoneer手数料 (USD): ${payoneerFeeUSD}`);
-console.log(`最終利益 (USD): ${netProfitUSD}`);
-console.log(`利益 (JPY): ${profitJPY}`);
+  // 🟢 3️⃣ 粗利・最終利益
+  console.log("------------------------------");
+  console.log(`粗利益 (USD): ${grossProfitUSD}`);
+  console.log(`Payoneer手数料 (JPY): ${payoneerFeeJPY}`);
+  console.log(`利益 (JPY): ${netProfitJPY}`);
 
-// 🟢 4️⃣ コスト・利益率・推奨売値
-console.log("------------------------------");
-console.log(`総コスト (JPY): ${totalCostJPY}`);
-console.log(`利益率 (%): ${profitMargin}`);
-console.log(`推奨売値 (USD): ${suggestedPriceUSD}`);
-console.log(`推奨売値 (JPY): ${suggestedPriceJPY}`);
+  // 🟢 4️⃣ コスト・利益率・推奨売値
+  console.log("------------------------------");
+  console.log(`総コスト (JPY): ${totalCostJPY}`);
+  console.log(`利益率 (%): ${profitMargin}`);
+  console.log(`推奨売値 (USD): ${suggestedPriceUSD}`);
+  console.log(`推奨売値 (JPY): ${suggestedPriceJPY}`);
 
-// 🟢 5️⃣ 為替・調整
-console.log("------------------------------");
-console.log(`為替レート (USD → JPY): ${exchangeRateUSDtoJPY}`);
-console.log(`為替調整額 (JPY): ${exchangeAdjustmentJPY}`);
+  // 🟢 5️⃣ 為替・調整
+  console.log("------------------------------");
+  console.log(`為替レート (USD → JPY): ${exchangeRateUSDtoJPY}`);
+  console.log(`為替調整額 (JPY): ${exchangeAdjustmentJPY}`);
 
-console.log("==============================");
+  console.log("==============================");
 
 
 
   return {
     totalCostJPY,
     grossProfitUSD,
-    netProfitUSD,
-    profitJPY,
+    netProfitJPY,
     profitMargin,
     suggestedPriceUSD,
     suggestedPrice: suggestedPriceJPY, // ← ここをJPYで返す
+    feeTaxJPY,
     feeTaxUSD,
+    payoneerFeeJPY,
     payoneerFeeUSD,
     exchangeAdjustmentJPY,
     categoryFeeUSD,
-     categoryFeeJPY: categoryFeeUSD * exchangeRateUSDtoJPY,
+    categoryFeeJPY: categoryFeeUSD * exchangeRateUSDtoJPY,
   };
 }
 
