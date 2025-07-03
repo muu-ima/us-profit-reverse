@@ -20,11 +20,9 @@ type ResultProps = {
     calcResult: CalcResult | null;  // anyを具体的に
 };
 
-export default function Result({ originalPriceUSD, priceJPY, sellingPriceInclTax,
+export default function Result({ originalPriceUSD, sellingPriceInclTax,
     exchangeRateUSDtoJPY, }: ResultProps) {
 
-    // finalJPYを計算：手数料込みレートで換算
-    const finalJPY = originalPriceUSD;
     return (
         <div className="result-box p-4 border rounded bg-gray-50">
             <p>USD価格(州税抜き): ＄{originalPriceUSD.toFixed(2)}</p>
