@@ -15,18 +15,26 @@ type CalcResult = {
 type ResultProps = {
     originalPriceUSD: number; // 入力そのままの GBP
     priceJPY: number; // 追加：計算済みのJPY価格をpropsで受け取る
+    sellingPriceInclTax: number; // 州税込みを渡す
+    exchangeRateUSDtoJPY: number; // もしJSX内で円換算するなら
     calcResult: CalcResult | null;  // anyを具体的に
 };
 
-export default function Result({ originalPriceUSD, priceJPY,}: ResultProps) {
-   
-       // finalJPYを計算：手数料込みレートで換算
+export default function Result({ originalPriceUSD, priceJPY, sellingPriceInclTax,
+    exchangeRateUSDtoJPY, }: ResultProps) {
+
+    // finalJPYを計算：手数料込みレートで換算
     const finalJPY = originalPriceUSD;
     return (
         <div className="result-box p-4 border rounded bg-gray-50">
-            <p>USD価格(ドル): ＄{originalPriceUSD.toFixed(1)}</p>
-            <p>円換算価格: ￥{priceJPY.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</p>
-            <p className="font-bold text-lg mt-2">概算価格: ＄{finalJPY.toLocaleString()}</p>
-        </div>
+            <p>USD価格(州税抜き): ＄{originalPriceUSD.toFixed(2)}</p>
+            <p>USD価格(州税込み): ＄{sellingPriceInclTax.toFixed(2)}</p>
+            <p>
+                円換算価格(州税込み): ￥
+                {(sellingPriceInclTax * exchangeRateUSDtoJPY).toLocaleString(undefined, {
+                    minimumFractionDigits: 1,
+                    maximumFractionDigits: 1,
+                })}
+            </p>        </div>
     );
 }

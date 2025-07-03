@@ -147,9 +147,14 @@ export default function Page() {
     }
   }, [shippingRates, weight, dimensions]);
 
- const categoryFeePercent = (calcResult && sellingPrice && rate)
-  ? (calcResult.categoryFeeJPY / (sellingPrice * rate)) * 100
-  : 0;
+  const categoryFeePercent = (calcResult && sellingPrice && rate)
+    ? (calcResult.categoryFeeJPY / (sellingPrice * rate)) * 100
+    : 0;
+
+  const stateTaxRate = 0.0671;
+  const sellingPriceNum = typeof sellingPrice === "number" ? sellingPrice : 0;
+  const sellingPriceInclTax = sellingPriceNum + sellingPriceNum * stateTaxRate;
+
 
 
   const final = calcResult
@@ -314,6 +319,8 @@ export default function Page() {
           <Result
             originalPriceUSD={typeof sellingPrice === "number" ? sellingPrice : 0}  // ★ 修正
             priceJPY={typeof sellingPrice === "number" && rate !== null ? sellingPrice * rate : 0}
+            sellingPriceInclTax={sellingPriceInclTax}
+            exchangeRateUSDtoJPY={rate ?? 0} 
             calcResult={calcResult}
           />
         )}
