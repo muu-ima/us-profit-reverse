@@ -3,15 +3,6 @@
 import { FinalProfitDetailUS } from '@/types/profitCalc';
 
 
-type FinalProfitDetail = {
-  customsFee: number;
-  platformFee: number;
-  totalCost: number;
-  profit: number;
-  profitMargin: number;
-  suggestedPrice: number;
-  targetMargin: number;
-};
 
 type FinalResultProps = {
   shippingMethod: string;
