@@ -66,7 +66,7 @@ export function calculateFinalProfitDetailUS({
   const totalFeesJPY = totalFeesUSD * exchangeRateUSDtoJPY;
 
   // 9. 最終利益 (JPY)
-  const netProfitJPY = revenueJPY - costPrice - shippingJPY - totalFeesJPY + exchangeAdjustmentJPY;
+  const netProfitJPY = (sellingPrice * exchangeRateUSDtoJPY) - costPrice - shippingJPY - totalFeesJPY + exchangeAdjustmentJPY;
 
    // 10. 総コスト (JPY)
   const categoryFeeJPY = categoryFeeUSD * exchangeRateUSDtoJPY;
@@ -84,46 +84,56 @@ export function calculateFinalProfitDetailUS({
   const suggestedPriceUSD = totalCostUSD / (1 - targetMargin);
   const suggestedPriceJPY = suggestedPriceUSD * exchangeRateUSDtoJPY;
 
-  // === Debug Logs ===
-  console.log("=== [US 利益計算] 開始 ===");
+console.log("=== [US 利益計算 DEBUG LOG] ===");
 
-  // 1. 売値と州税
-  console.log(`売値 (USD): $${sellingPrice.toFixed(2)}`);
-  console.log(`州税率: ${(stateTaxRate * 100).toFixed(2)}%`);
-  console.log(`州税込み売上 (USD): $${sellingPriceInclTax.toFixed(2)}`);
+// 1️⃣ 入力パラメータ
+console.log(`売値 (USD): $${sellingPrice.toFixed(2)}`);
+console.log(`仕入れ値 (JPY): ￥${costPrice.toLocaleString()}`);
+console.log(`送料 (JPY): ￥${shippingJPY.toLocaleString()}`);
+console.log(`カテゴリ手数料率 (%): ${categoryFeePercent.toFixed(2)}%`);
+console.log(`決済手数料率 (%): ${paymentFeePercent.toFixed(2)}%`);
+console.log(`目標利益率: ${(targetMargin * 100).toFixed(2)}%`);
+console.log(`為替レート (USD→JPY): ${exchangeRateUSDtoJPY.toFixed(4)}`);
 
-  console.log("------------------------------");
+console.log("------------------------------");
 
-  // 2. 手数料詳細
-  console.log(`カテゴリ手数料率: ${categoryFeePercent.toFixed(2)}%`);
-  console.log(`カテゴリ手数料 (USD): $${categoryFeeUSD.toFixed(2)}`);
-  console.log(`決済手数料率: ${paymentFeePercent.toFixed(2)}%`);
-  console.log(`決済手数料 (USD): $${paymentFeeUSD.toFixed(2)}`);
-  console.log(`手数料税 (USD): $${feeTaxUSD.toFixed(2)}`);
-  console.log(`手数料合計 (USD): $${totalFeesUSD.toFixed(2)}`);
+// 2️⃣ 州税・税込売上
+console.log(`州税込み売上 (USD): $${sellingPriceInclTax.toFixed(2)}`);
+console.log(`税抜き売上 (USD): $${sellingPrice.toFixed(2)}`);
+console.log(`税抜き売上 (JPY): ￥${revenueJPY.toLocaleString()}`);
 
-  console.log("------------------------------");
 
-  // 3. 粗利・最終利益
-  console.log(`粗利益 (USD): $${grossProfitUSD.toFixed(2)}`);
-  console.log(`Payoneer手数料 (JPY): ￥${payoneerFeeJPY.toLocaleString(undefined, { minimumFractionDigits: 0 })}`);
-  console.log(`最終利益 (JPY): ￥${netProfitJPY.toLocaleString(undefined, { minimumFractionDigits: 0 })}`);
+console.log("------------------------------");
 
-  console.log("------------------------------");
+// 3️⃣ 手数料詳細
+console.log(`カテゴリ手数料 (USD): $${categoryFeeUSD.toFixed(2)}`);
+console.log(`決済手数料 (USD): $${paymentFeeUSD.toFixed(2)}`);
+console.log(`手数料税 (USD): $${feeTaxUSD.toFixed(2)}`);
+console.log(`Payoneer手数料 (USD): $${payoneerFeeUSD.toFixed(2)}`);
+console.log(`手数料合計 (USD): $${totalFeesUSD.toFixed(2)}`);
 
-  // 4. コスト・利益率・推奨売値
-  console.log(`総コスト (JPY): ￥${totalCostJPY.toLocaleString(undefined, { minimumFractionDigits: 0 })}`);
-  console.log(`利益率 (%): ${profitMargin.toFixed(2)}%`);
-  console.log(`推奨売値 (USD): $${suggestedPriceUSD.toFixed(2)}`);
-  console.log(`推奨売値 (JPY): ￥${suggestedPriceJPY.toLocaleString(undefined, { minimumFractionDigits: 0 })}`);
+console.log(`カテゴリ手数料 (JPY): ￥${categoryFeeJPY.toLocaleString(undefined, { minimumFractionDigits: 0 })}`);
+console.log(`決済手数料 (JPY): ￥${paymentFeeJPY.toLocaleString(undefined, { minimumFractionDigits: 0 })}`);
+console.log(`手数料税 (JPY): ￥${feeTaxJPY.toLocaleString(undefined, { minimumFractionDigits: 0 })}`);
+console.log(`Payoneer手数料 (JPY): ￥${payoneerFeeJPY.toLocaleString(undefined, { minimumFractionDigits: 0 })}`);
+console.log(`手数料合計 (JPY): ￥${totalFeesJPY.toLocaleString(undefined, { minimumFractionDigits: 0 })}`);
 
-  console.log("------------------------------");
+console.log("------------------------------");
 
-  // 5. 為替・調整
-  console.log(`為替レート (USD→JPY): ${exchangeRateUSDtoJPY.toFixed(4)}`);
-  console.log(`為替調整額 (JPY): ￥${exchangeAdjustmentJPY.toLocaleString(undefined, { minimumFractionDigits: 0 })}`);
+// 4️⃣ 粗利・最終利益
+console.log(`粗利益 (USD): $${grossProfitUSD.toFixed(2)}`);
+console.log(`最終利益 (JPY): ￥${netProfitJPY.toLocaleString(undefined, { minimumFractionDigits: 0 })}`);
+console.log(`為替調整額 (JPY): ￥${exchangeAdjustmentJPY.toLocaleString(undefined, { minimumFractionDigits: 0 })}`);
 
-  console.log("=== [US 利益計算] 終了 ===");
+console.log("------------------------------");
+
+// 5️⃣ コスト・利益率・推奨売値
+console.log(`総コスト (JPY): ￥${totalCostJPY.toLocaleString(undefined, { minimumFractionDigits: 0 })}`);
+console.log(`利益率 (%): ${profitMargin.toFixed(2)}%`);
+console.log(`推奨売値 (USD): $${suggestedPriceUSD.toFixed(2)}`);
+console.log(`推奨売値 (JPY): ￥${suggestedPriceJPY.toLocaleString(undefined, { minimumFractionDigits: 0 })}`);
+
+console.log("=== [US 利益計算 DEBUG END] ===");
 
 
 

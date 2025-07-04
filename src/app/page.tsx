@@ -163,9 +163,9 @@ export default function Page() {
       costPrice: typeof costPrice === "number" ? costPrice : 0,
       shippingJPY: calcResult.shippingJPY,
       categoryFeePercent: categoryFeePercent,
-      paymentFeePercent: 4, // 関税率
+      paymentFeePercent: 1.35, //決済手数料(%)
       exchangeRateUSDtoJPY: rate ?? 0,
-      targetMargin: 0.25,
+      targetMargin: 0.30,
     })
     : null;
 
@@ -329,7 +329,7 @@ export default function Page() {
           <FinalResult
             shippingMethod={result?.method || ""}
             shippingJPY={calcResult?.shippingJPY || 0}
-            categoryFeeJPY={calcResult?.categoryFeeJPY || 0}
+            categoryFeeJPY={final.categoryFeeJPY || 0} // 州税込みベース
             data={final}
             exchangeRateUSDtoJPY={rate ?? 0}
           />
