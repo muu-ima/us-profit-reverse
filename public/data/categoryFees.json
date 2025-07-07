@@ -31,6 +31,50 @@
     "value": 12.35,
     "categories": ["Trading Cards", "Comic Books & Memorabilia"]
   },
+    {
+    "label": "スマホ",
+    "value": 9.35,
+    "categories": [
+      "Most Cell Phones & Accessories categories"
+    ]
+  },
+    {
+    "label": "PC機器",
+    "value": 7.35,
+    "categories": [
+      "Select Computers/Tablets & Networking: Desktops & All-In-Ones",
+      "Laptops & Netbooks",
+      "Tablets & eBook Readers",
+      "Computer Components & Parts > CPUs/Processors",
+      "Computer Components & Parts > Memory (RAM)",
+      "Computer Components & Parts > Motherboards",
+      "Computer Components & Parts > Motherboards & CPU Combos",
+      "Drives, Storage & Blank Media > Hard Drives (HDD, SSD & NAS)",
+      "Monitors, Projectors & Accs > Monitors",
+      "Printers, Scanners & Supplies > Printers"
+    ]
+  },
+    {
+    "label": "PC周辺機器",
+    "value": 12.7,
+    "categories": [
+      "Select Computers/Tablets & Networking: 3D Printers & Supplies > 3D Printer Consumables",
+      "3D Printers & Supplies > 3D Printer Parts",
+      "Computer Cables & Connectors",
+      "Keyboards, Mice & Pointers",
+      "Laptop & Desktop Accessories",
+      "Other Computers & Networking",
+      "Power Protection, Distribution",
+      "Tablet & eBook Reader Accs (except Memory Card & USB Adapters)"
+    ]
+  },
+    {
+    "label": "ゲーム機本体",
+    "value": 7.35,
+    "categories": [
+      "Video Games & Consoles > Video Game Consoles"
+    ]
+  },
   {
     "label": "時計",
     "value": 13.0,
