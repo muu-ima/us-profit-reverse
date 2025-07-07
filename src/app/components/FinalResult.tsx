@@ -31,7 +31,7 @@ export default function FinalResult({
       <p>手数料税: {data.feeTaxJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })} 円</p>
       <p>為替調整額: {data.exchangeAdjustmentJPY.toLocaleString()} 円</p>
       <p>総コスト: {data.totalCostJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })} 円</p>
-      <p>粗利 (州税後の売上 - 手数料):  {(data.grossProfitUSD * exchangeRateUSDtoJPY).toLocaleString(undefined, { maximumFractionDigits: 0 })} 円</p>
+      <p>粗利 (売値 - 手数料):  {(data.grossProfitUSD * exchangeRateUSDtoJPY).toLocaleString(undefined, { maximumFractionDigits: 0 })} 円</p>
       <p>最終利益 (Payoneer手数料引後): {data.netProfitJPY.toFixed(2)} 円</p>
       <p>利益率: {data.profitMargin.toFixed(2)}%</p>
       <p className="text-green-700 font-semibold text-lg">

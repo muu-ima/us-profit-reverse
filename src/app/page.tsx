@@ -38,7 +38,6 @@ type CalcResult = {
   grossProfit: number; // 粗利益（円）
   profitMargin: number;// 利益率(%)
   method: string; //選択配送方法
-  sellingPriceGBP: number; // 入力売値(GBP)
   rate: number; // 為替レート
   sellingPriceJPY: number; //売値(円換算)
 }
@@ -85,9 +84,9 @@ export default function Page() {
       const shippingJPY = result.price ?? 0;
 
       // ここで売値の変換をする
-      const sellingPriceGBP = typeof sellingPrice === "number" ? sellingPrice : 0;
+      const sellingPriceUSD = typeof sellingPrice === "number" ? sellingPrice : 0;
       // 円換算は掛け算
-      const sellingPriceJPY = sellingPriceGBP * (rate ?? 0);
+      const sellingPriceJPY = sellingPriceUSD * (rate ?? 0);
       //カテゴリ手数料JPY計算
       const categoryFeeJPY = calculateCategoryFeeUS(
         typeof sellingPrice === "number" && rate !== null
@@ -120,7 +119,6 @@ export default function Page() {
         grossProfit,
         profitMargin,
         method: result.method,
-        sellingPriceGBP,
         sellingPriceJPY,
         rate
       });

@@ -49,7 +49,7 @@ export function calculateFinalProfitDetailUS({
   const feeTaxUSD = (categoryFeeUSD + paymentFeeUSD) * 0.10;
 
    // 4. Payoneer手数料 (粗利の2%) → 一旦は州税込み売上 - 基本手数料で粗利計算してから算出
-  const grossProfitUSD = sellingPriceInclTax - (categoryFeeUSD + paymentFeeUSD + feeTaxUSD);
+  const grossProfitUSD = sellingPrice - (categoryFeeUSD + paymentFeeUSD + feeTaxUSD);
   const payoneerFeeUSD = grossProfitUSD * 0.02;
 
     // 5. 為替調整額 (JPY)
