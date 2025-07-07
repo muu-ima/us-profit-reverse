@@ -80,6 +80,15 @@
     "value": 13.0,
     "categories": ["Jewelry & Watches"]
   },
+    {
+    "label": "その他楽器",
+    "value": 10.35,
+    "categories": [
+      "Most Musical Instruments & Gear categories, except:",
+      "Musical Instruments & Gear > DJ Equipment",
+      "Musical Instruments & Gear > Pro Audio Equipment"
+    ]
+  },
   {
     "label": "アクセサリー",
     "value": 12.5,
