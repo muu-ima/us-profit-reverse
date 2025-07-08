@@ -37,6 +37,9 @@ export function calculateFinalProfitDetailUS({
     throw new Error("exchangeRateUSDtoJPY が必要です！");
   }
 
+  //  州税抜き売上 (JPY)
+  const revenueJPYExclTax = sellingPrice * exchangeRateUSDtoJPY;
+
   // 1. 州税6.71%を計算、州税込みの売上 (USD)
   const stateTaxRate = 0.0671;
   const sellingPriceInclTax = sellingPrice * (1 + stateTaxRate);
@@ -53,12 +56,9 @@ export function calculateFinalProfitDetailUS({
   const payoneerFeeUSD = grossProfitUSD * 0.02;
 
   // 5-1. 為替還付金 (JPY)
-  const exchangeAdjustmentJPY = sellingPrice * 3.3;
+  const exchangeAdjustmentJPY = revenueJPYExclTax * 0.1;
   // 5-2. 手数料還付金 (JPY)
   const feeRebateJPY = feeTaxUSD * exchangeRateUSDtoJPY
-
-  // 6. 州税抜き売上 (JPY)
-  const revenueJPYExclTax = sellingPrice * exchangeRateUSDtoJPY;
 
   // 粗利 (JPY) = 売上 - 仕入れ - 送料
   const grossProfitJPY = revenueJPYExclTax - costPrice - shippingJPY;

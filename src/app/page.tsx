@@ -207,9 +207,18 @@ export default function Page() {
           <input
             type="number"
             value={sellingPrice}
-            onChange={(e) =>
-              setSellingPrice(e.target.value === "" ? "" : Number(e.target.value))
-            }
+            onChange={(e) => {
+              const raw = e.target.value;
+              if (raw === "") {
+                setSellingPrice("");
+                return;
+              }
+
+              let num = Number(raw);
+              if (num < 0) num = 0;
+
+              setSellingPrice(num);
+            }}
             placeholder="売値"
             className="w-full px-3 py-2 border rounded-md"
           />
@@ -236,36 +245,54 @@ export default function Page() {
             <input
               type="number"
               value={dimensions.length || ""}
-              onChange={(e) =>
-                setDimensions((prev) => ({
-                  ...prev,
-                  length: Number(e.target.value),
-                }))
-              }
+              onChange={(e) => {
+                const raw = e.target.value;
+                if (raw === "") {
+                  setDimensions((prev) => ({ ...prev, length: 0 }));
+                  return;
+                }
+
+                let num = Number(raw);
+                if (num < 0) num = 0;
+
+                setDimensions((prev) => ({ ...prev, length: num }));
+              }}
               placeholder="長さ"
               className="px-2 py-1 border rounded-md"
             />
             <input
               type="number"
               value={dimensions.width || ""}
-              onChange={(e) =>
-                setDimensions((prev) => ({
-                  ...prev,
-                  width: Number(e.target.value),
-                }))
-              }
+              onChange={(e) => {
+                const raw = e.target.value;
+                if (raw === "") {
+                  setDimensions((prev) => ({ ...prev, width: 0 }));
+                  return;
+                }
+
+                let num = Number(raw);
+                if (num < 0) num = 0;
+
+                setDimensions((prev) => ({ ...prev, width: num }));
+              }}
               placeholder="幅"
               className="px-2 py-1 border rounded-md"
             />
             <input
               type="number"
               value={dimensions.height || ""}
-              onChange={(e) =>
-                setDimensions((prev) => ({
-                  ...prev,
-                  height: Number(e.target.value),
-                }))
-              }
+              onChange={(e) => {
+                const raw = e.target.value;
+                if (raw === "") {
+                  setDimensions((prev) => ({ ...prev, height: 0 }));
+                  return;
+                }
+
+                let num = Number(raw);
+                if (num < 0) num = 0;
+
+                setDimensions((prev) => ({ ...prev, height: num }));
+              }}
               placeholder="高さ"
               className="px-2 py-1 border rounded-md"
             />
@@ -318,7 +345,7 @@ export default function Page() {
             originalPriceUSD={typeof sellingPrice === "number" ? sellingPrice : 0}  // ★ 修正
             priceJPY={typeof sellingPrice === "number" && rate !== null ? sellingPrice * rate : 0}
             sellingPriceInclTax={sellingPriceInclTax}
-            exchangeRateUSDtoJPY={rate ?? 0} 
+            exchangeRateUSDtoJPY={rate ?? 0}
             calcResult={calcResult}
           />
         )}

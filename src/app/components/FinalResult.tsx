@@ -56,7 +56,7 @@ export default function FinalResult({
         <div className="border-t border-gray-300 my-2" />
 
         <p className="text-gray-500 text-sm">
-          ※ 為替還付金（参考） : ￥{data.exchangeAdjustmentJPY.toLocaleString()}（計算には含めていません）
+          ※ 税還付金（参考） : ￥{data.exchangeAdjustmentJPY.toLocaleString()}（計算には含めていません）
           <br></br>
           ※ 手数料還付金（参考） : ￥{data.feeRebateJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}（計算には含めていません）
         </p>
