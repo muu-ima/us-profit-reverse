@@ -20,7 +20,7 @@ export default function FinalResult({
   categoryFeeJPY,
   data,
   exchangeRateUSDtoJPY,
-}: FinalResultProps) {
+} : FinalResultProps) {
   return (
     <div className="p-4 border rounded-lg shadow space-y-2 bg-white">
       <h2 className="text-lg font-bold mb-2">【最終利益の詳細】</h2>
@@ -31,6 +31,7 @@ export default function FinalResult({
 
         <div className="border-t border-gray-300 my-2" />
 
+        <p>■ 配送方法 : {shippingMethod.toLocaleString()}</p>
         <p>■ 配送料 : ￥{shippingJPY.toLocaleString()}</p>
         <p>■ 仕入れ : ￥{data.costPrice.toLocaleString()}</p>
 
