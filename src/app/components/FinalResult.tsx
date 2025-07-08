@@ -22,20 +22,42 @@ export default function FinalResult({
   exchangeRateUSDtoJPY,
 }: FinalResultProps) {
   return (
-    <div className="p-4 border rounded-lg shadow space-y-2">
-      <h2 className="text-lg font-bold">最終利益の詳細 (US版)</h2>
-      <p>配送方法: {shippingMethod}</p>
-      <p>配送料: {shippingJPY.toLocaleString()} 円</p>
-      <p>カテゴリ手数料: {categoryFeeJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })} 円</p>
-      <p>Payoneer手数料: {data.payoneerFeeJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })} 円</p>
-      <p>手数料税: {data.feeTaxJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })} 円</p>
-      <p>為替調整額: {data.exchangeAdjustmentJPY.toLocaleString()} 円</p>
-      <p>総コスト: {data.totalCostJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })} 円</p>
-      <p>粗利 (売値 - 手数料):  {(data.grossProfitUSD * exchangeRateUSDtoJPY).toLocaleString(undefined, { maximumFractionDigits: 0 })} 円</p>
-      <p>最終利益 (Payoneer手数料引後): {data.netProfitJPY.toFixed(2)} 円</p>
-      <p>利益率: {data.profitMargin.toFixed(2)}%</p>
-      <p className="text-green-700 font-semibold text-lg">
-        推奨売値: ${data.suggestedPriceUSD.toFixed(2)} USD
-      </p>    </div>
+    <div className="p-4 border rounded-lg shadow space-y-2 bg-white">
+      <h2 className="text-lg font-bold mb-2">【最終利益の詳細】</h2>
+
+      <div className="space-y-1">
+        <p>■ 売上 (税抜) : ${data.sellingPrice.toFixed(2)} / ￥{Math.round(data.sellingPrice * exchangeRateUSDtoJPY).toLocaleString()}</p>
+        <p>■ 州税込売上 : ${data.sellingPriceInclTax.toFixed(2)} / ￥{Math.round(data.sellingPriceInclTax * exchangeRateUSDtoJPY).toLocaleString()}</p>
+
+        <div className="border-t border-gray-300 my-2" />
+
+        <p>■ 配送料 : ￥{shippingJPY.toLocaleString()}</p>
+        <p>■ 仕入れ : ￥{data.costPrice.toLocaleString()}</p>
+
+        <div className="border-t border-gray-300 my-2" />
+
+        <p className="text-gray-600 font-semibold my-1">州税込売上から計算</p>
+        <p>■ カテゴリ手数料 : ￥{categoryFeeJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+        <p>■ 決済手数料 : ￥{data.paymentFeeJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+        <p>■ 手数料税 : ￥{data.feeTaxJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+        <p>■ Payoneer手数料 : ￥{data.payoneerFeeJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+
+
+        <div className="border-t border-gray-300 my-2" />
+
+        <p>■ 粗利 (売上 - 仕入 - 配送) : ￥{data.grossProfitJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+        <p>■ 最終利益（手数料引後） : ￥{data.netProfitJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+        <p>■ 利益率 : {data.profitMargin.toFixed(2)}%</p>
+        <p className="text-green-700 font-semibold text-lg">
+          ■ 推奨売値 : ${data.suggestedPriceUSD.toFixed(2)} USD
+        </p>
+
+        <div className="border-t border-gray-300 my-2" />
+
+        <p className="text-gray-500 text-sm">
+          ※ 還付金（参考） : ￥{data.exchangeAdjustmentJPY.toLocaleString()}（計算には含めていません）
+        </p>
+      </div>
+    </div>
   );
 }
