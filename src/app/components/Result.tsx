@@ -29,10 +29,7 @@ export default function Result({ originalPriceUSD, sellingPriceInclTax,
             <p>USD価格(州税込み): ＄{sellingPriceInclTax.toFixed(2)}</p>
             <p>
                 円換算価格(州税込み): ￥
-                {(sellingPriceInclTax * exchangeRateUSDtoJPY).toLocaleString(undefined, {
-                    minimumFractionDigits: 1,
-                    maximumFractionDigits: 1,
-                })}
+                {(sellingPriceInclTax * exchangeRateUSDtoJPY).toLocaleString(undefined, { maximumFractionDigits: 0 })}
             </p>        </div>
     );
 }
