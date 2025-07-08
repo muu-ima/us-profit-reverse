@@ -19,6 +19,7 @@ export interface FinalProfitDetailUS {
     feeTaxJPY: number;              //手数料Tax (JPY)
     feeTaxUSD: number;              // 手数料Tax (USD)
     exchangeAdjustmentJPY: number;  // USD→JPYでの調整額 (JPY)
+    feeRebateJPY: number;
     categoryFeeUSD: number;
     categoryFeeJPY: number;
     payoneerFeeJPY: number;

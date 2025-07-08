@@ -52,8 +52,10 @@ export function calculateFinalProfitDetailUS({
   const grossProfitUSD = sellingPrice - (categoryFeeUSD + paymentFeeUSD + feeTaxUSD);
   const payoneerFeeUSD = grossProfitUSD * 0.02;
 
-  // 5. 為替調整額 (JPY)
+  // 5. 為替還付金 (JPY)
   const exchangeAdjustmentJPY = sellingPrice * 3.3;
+  //手数料還付金
+  const feeRebateJPY = feeTaxUSD * exchangeRateUSDtoJPY
 
   // 6. 州税込み売上 (JPY)
   const revenueJPY = sellingPriceInclTax * exchangeRateUSDtoJPY;
@@ -147,6 +149,7 @@ export function calculateFinalProfitDetailUS({
     payoneerFeeJPY,
     payoneerFeeUSD,
     exchangeAdjustmentJPY,
+    feeRebateJPY,
     categoryFeeUSD,
     categoryFeeJPY: categoryFeeUSD * exchangeRateUSDtoJPY,
     grossProfitJPY,
