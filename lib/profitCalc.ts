@@ -57,9 +57,7 @@ export function calculateFinalProfitDetailUS({
   // 5-2. 手数料還付金 (JPY)
   const feeRebateJPY = feeTaxUSD * exchangeRateUSDtoJPY
 
-  // 6-1. 州税込み売上 (JPY)
-  const revenueJPY = sellingPriceInclTax * exchangeRateUSDtoJPY;
-  // 6-2. 州税抜き売上 (JPY)
+  // 6. 州税抜き売上 (JPY)
   const revenueJPYExclTax = sellingPrice * exchangeRateUSDtoJPY;
 
   // 粗利 (JPY) = 売上 - 仕入れ - 送料
