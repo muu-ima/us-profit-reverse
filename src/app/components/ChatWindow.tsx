@@ -102,7 +102,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
           paddingBottom: 8,
         }}
       >
-        <h2 style={{ margin: 0, fontSize: 18, color: "#333" }}>AIチャット</h2>
+        <h2 style={{ margin: 0, fontSize: 18, color: "#333" }}>簡単チャットボット</h2>
         <button
           onClick={onClose}
           aria-label="チャットを閉じる"
