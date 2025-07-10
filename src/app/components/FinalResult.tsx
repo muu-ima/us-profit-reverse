@@ -32,22 +32,22 @@ export default function FinalResult({
         <div className="border-t border-gray-300 my-2" />
 
         <p>■ 配送方法 : {shippingMethod.toLocaleString()}</p>
-        <p>■ 配送料 : ￥{shippingJPY.toLocaleString()}</p>
-        <p>■ 仕入れ : ￥{data.costPrice.toLocaleString()}</p>
+        <p>■ 配送料 : ${ (shippingJPY / exchangeRateUSDtoJPY) .toFixed(2)} / ￥{shippingJPY.toLocaleString()}</p>
+        <p>■ 仕入れ : ${ (data.costPrice / exchangeRateUSDtoJPY) .toFixed(2)} / ￥{data.costPrice.toLocaleString()}</p>
 
         <div className="border-t border-gray-300 my-2" />
 
-        <p className="text-gray-600 font-semibold my-1">州税込売上から計算</p>
-        <p>■ カテゴリ手数料 : ￥{categoryFeeJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
-        <p>■ 決済手数料 : ￥{data.paymentFeeJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
-        <p>■ 手数料税 : ￥{data.feeTaxJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
-        <p>■ Payoneer手数料 : ￥{data.payoneerFeeJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+        <p className="text-gray-600 font-semibold my-1">【州税込売上から計算】</p>
+        <p>■ カテゴリ手数料 : ${ (categoryFeeJPY / exchangeRateUSDtoJPY) .toFixed(2)} / ￥{categoryFeeJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+        <p>■ 決済手数料 : ${ (data.paymentFeeJPY / exchangeRateUSDtoJPY) .toFixed(2)} / ￥{data.paymentFeeJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+        <p>■ 手数料税 : ${ (data.feeTaxJPY / exchangeRateUSDtoJPY) .toFixed(2)} / ￥{data.feeTaxJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+        <p>■ Payoneer手数料 : ${ (data.payoneerFeeJPY / exchangeRateUSDtoJPY) .toFixed(2)} / ￥{data.payoneerFeeJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
 
 
         <div className="border-t border-gray-300 my-2" />
 
-        <p>■ 粗利 (売上 - 仕入 - 配送) : ￥{data.grossProfitJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
-        <p>■ 最終利益（手数料引後） : ￥{data.netProfitJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+        <p>■ 粗利 (売上 - 仕入 - 配送) :${ (data.grossProfitJPY / exchangeRateUSDtoJPY) .toFixed(2)} / ￥{data.grossProfitJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+        <p>■ 最終利益（手数料引後） : ${ (data.netProfitJPY / exchangeRateUSDtoJPY) .toFixed(2)} / ￥{data.netProfitJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
         <p>■ 利益率 : {data.profitMargin.toFixed(2)}%</p>
         <p className="text-green-700 font-semibold text-lg">
           ■ 推奨売値 : ${data.suggestedPriceUSD.toFixed(2)} USD
@@ -56,9 +56,9 @@ export default function FinalResult({
         <div className="border-t border-gray-300 my-2" />
 
         <p className="text-gray-500 text-sm">
-          ※ 税還付金（参考） : ￥{data.exchangeAdjustmentJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}（計算には含めていません）
+          ※ 税還付金（参考） : ${ (data.exchangeAdjustmentJPY / exchangeRateUSDtoJPY) .toFixed(2) } / ￥{data.exchangeAdjustmentJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}（計算には含めていません）
           <br></br>
-          ※ 手数料還付金（参考） : ￥{data.feeRebateJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}（計算には含めていません）
+          ※ 手数料還付金（参考） :${ (data.feeRebateJPY / exchangeRateUSDtoJPY) .toFixed(2)} / ￥{data.feeRebateJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}（計算には含めていません）
         </p>
       </div>
     </div>
