@@ -67,7 +67,6 @@ export function calculateFinalProfitDetailUS({
   // 7. 全手数料 (USD) 合計
   const totalFeesUSD = categoryFeeUSD + paymentFeeUSD + feeTaxUSD + payoneerFeeUSD;
 
-
   // 8. 全手数料 (JPY)
   const totalFeesJPY = totalFeesUSD * exchangeRateUSDtoJPY;
 
@@ -90,6 +89,18 @@ export function calculateFinalProfitDetailUS({
   const totalCostUSD = totalCostJPY / exchangeRateUSDtoJPY;
   const suggestedPriceUSD = totalCostUSD / (1 - targetMargin);
   const suggestedPriceJPY = suggestedPriceUSD * exchangeRateUSDtoJPY;
+
+  // ✅ 税抜き売上（JPY）
+  const spSheetRevenueJPY = revenueJPYExclTax;
+
+  // ✅ 全手数料（JPY）
+  const spSheetFeesJPY = totalFeesJPY;
+
+  // ✅ スプレッドシート方式：売上 − 手数料
+  const spSheetRevenueAfterFeesJPY = spSheetRevenueJPY - spSheetFeesJPY;
+
+  // ✅ スプレッドシート方式：最終利益
+  const spSheetNetProfitJPY = spSheetRevenueAfterFeesJPY - costPrice - shippingJPY;
 
   console.log("=== [US 利益計算 DEBUG LOG] ===");
 
@@ -158,6 +169,8 @@ export function calculateFinalProfitDetailUS({
     sellingPriceInclTax,
     paymentFeeJPY,         // ← 追加
     paymentFeeUSD,
+    spSheetNetProfitJPY,
+    spSheetRevenueAfterFeesJPY,
     costPrice
   };
 }

@@ -48,6 +48,9 @@ export default function FinalResult({
 
         <p>■ 粗利 (売上 - 仕入 - 配送) :${ (data.grossProfitJPY / exchangeRateUSDtoJPY) .toFixed(2)} / ￥{data.grossProfitJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
         <p>■ 最終利益（手数料引後） : ${ (data.netProfitJPY / exchangeRateUSDtoJPY) .toFixed(2)} / ￥{data.netProfitJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+        <p>■ スプレッドシート方式利益 : ${ (data.spSheetRevenueAfterFeesJPY / exchangeRateUSDtoJPY) .toFixed(2)} / ￥ { data.spSheetRevenueAfterFeesJPY.toLocaleString(undefined, { maximumFractionDigits: 0})}</p>                
+        <p>■ スプレッドシート方式最終損益 : ${ (data.spSheetNetProfitJPY / exchangeRateUSDtoJPY).toFixed(2) } / ￥{ data.spSheetNetProfitJPY.toLocaleString(undefined, { maximumFractionDigits: 0 }) }</p>
+
         <p>■ 利益率 : {data.profitMargin.toFixed(2)}%</p>
         <p className="text-green-700 font-semibold text-lg">
           ■ 推奨売値 : ${data.suggestedPriceUSD.toFixed(2)} USD

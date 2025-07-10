@@ -31,4 +31,6 @@ export interface FinalProfitDetailUS {
     costPrice: number;             // 円 (仕入れ値)
     paymentFeeJPY: number;  // ← 追加
     paymentFeeUSD: number;
+    spSheetNetProfitJPY: number; //spシートテスト用
+    spSheetRevenueAfterFeesJPY: number;
 }
