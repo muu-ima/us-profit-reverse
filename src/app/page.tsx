@@ -170,7 +170,7 @@ export default function Page() {
 
 
   return (
-    <div className="p-4 max-w-5xl mx-auto flex flex-col md:flex-row md:space-x-8 space-y-8 md:space-y-0">
+    <div className="p-4 max-w-7xl mx-auto flex flex-col md:flex-row md:space-x-8 space-y-8 md:space-y-0">
       <div className="flex-1 flex flex-col space-y-4">
         {/* 為替レート表示コンポーネント */}
         <ExchangeRate onRateChange={setRate} />
