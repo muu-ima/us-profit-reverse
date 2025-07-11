@@ -102,6 +102,9 @@ export function calculateFinalProfitDetailUS({
   // ✅ スプレッドシート方式：最終利益
   const spSheetNetProfitJPY = spSheetRevenueAfterFeesJPY + exchangeAdjustmentJPY + feeRebateJPY;
 
+    // スプレッドシート方式の利益率
+  const spSheetProfitMargin = totalCostJPY === 0 ? 0 : (spSheetNetProfitJPY / totalCostJPY) * 100;
+
   console.log("=== [US 利益計算 DEBUG LOG] ===");
 
   // 1️⃣ 入力パラメータ
@@ -167,7 +170,7 @@ export function calculateFinalProfitDetailUS({
     paymentFeeJPY,         // ← 追加
     paymentFeeUSD,
     spSheetNetProfitJPY,
-    spSheetRevenueAfterFeesJPY,
+    spSheetRevenueAfterFeesJPY,spSheetProfitMargin,
     costPrice
   };
 }

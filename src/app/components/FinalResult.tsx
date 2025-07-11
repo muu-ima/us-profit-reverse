@@ -54,10 +54,14 @@ export default function FinalResult({
               ■ スプレッドシート方式利益 : ${(data.spSheetRevenueAfterFeesJPY / exchangeRateUSDtoJPY).toFixed(2)} / ￥{data.spSheetRevenueAfterFeesJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}
             </p>
           </div>
-          <div className="p-4 bg-green-50 border-l-4 border-green-500 rounded">
+          <div className="p-4 bg-green-50 border-l-4 border-green-500 mb-4 rounded">
             <p className="text-lg font-bold text-green-800">
               ■ スプレッドシート方式最終損益 : ${(data.spSheetNetProfitJPY / exchangeRateUSDtoJPY).toFixed(2)} / ￥{data.spSheetNetProfitJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}
             </p>
+          </div>
+          <div className="p-4 bg-violet-50 border-l-4 border-green-500 rounded">
+            <p className="text-lg font-bold text-green-800">
+              ■ スプレッドシート方式利益率 : {data.spSheetProfitMargin.toFixed(2)}%</p> 
           </div>
         </div>
 

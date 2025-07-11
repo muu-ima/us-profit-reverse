@@ -31,4 +31,6 @@ export interface FinalProfitDetailUS {
     paymentFeeUSD: number;
     spSheetNetProfitJPY: number; //spシートテスト用
     spSheetRevenueAfterFeesJPY: number;
+    spSheetProfitMargin: number;
 }
+
