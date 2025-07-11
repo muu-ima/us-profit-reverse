@@ -86,9 +86,9 @@ export function calculateFinalProfitDetailUS({
   const profitMargin = totalCostJPY === 0 ? 0 : (netProfitJPY / totalCostJPY) * 100;
 
   // 12. 推奨売値 (USD) = 総コスト ÷ (1 - 目標利益率)
-  const totalCostUSD = totalCostJPY / exchangeRateUSDtoJPY;
-  const suggestedPriceUSD = totalCostUSD / (1 - targetMargin);
-  const suggestedPriceJPY = suggestedPriceUSD * exchangeRateUSDtoJPY;
+  // const totalCostUSD = totalCostJPY / exchangeRateUSDtoJPY;
+  // const suggestedPriceUSD = totalCostUSD / (1 - targetMargin);
+  // const suggestedPriceJPY = suggestedPriceUSD * exchangeRateUSDtoJPY;
 
   // ✅ 税抜き売上（JPY）
   const spSheetRevenueJPY = revenueJPYExclTax;
@@ -96,11 +96,11 @@ export function calculateFinalProfitDetailUS({
   // ✅ 全手数料（JPY）
   const spSheetFeesJPY = totalFeesJPY;
 
-  // ✅ スプレッドシート方式：売上 − 手数料
-  const spSheetRevenueAfterFeesJPY = spSheetRevenueJPY - spSheetFeesJPY;
+  // ✅ スプレッドシート方式：税抜き売上 − 仕入れ値 - 送料
+  const spSheetRevenueAfterFeesJPY = spSheetRevenueJPY - costPrice - shippingJPY - spSheetFeesJPY;
 
   // ✅ スプレッドシート方式：最終利益
-  const spSheetNetProfitJPY = spSheetRevenueAfterFeesJPY - costPrice - shippingJPY;
+  const spSheetNetProfitJPY = spSheetRevenueAfterFeesJPY + exchangeAdjustmentJPY + feeRebateJPY;
 
   console.log("=== [US 利益計算 DEBUG LOG] ===");
 
@@ -141,7 +141,6 @@ export function calculateFinalProfitDetailUS({
   // 5️⃣ コスト・利益率・推奨売値
   console.log(`総コスト: ￥${totalCostJPY.toLocaleString()}`);
   console.log(`利益率: ${profitMargin.toFixed(2)}%`);
-  console.log(`推奨売値: $${suggestedPriceUSD.toFixed(2)} / ￥${suggestedPriceJPY.toLocaleString()}`);
 
   console.log("総コスト（丸め前）:", totalCostJPYRaw);
   console.log("総コスト（丸め後）:", totalCostJPY);
@@ -154,8 +153,6 @@ export function calculateFinalProfitDetailUS({
     grossProfitUSD,
     netProfitJPY,
     profitMargin,
-    suggestedPriceUSD,
-    suggestedPrice: suggestedPriceJPY, // ← ここをJPYで返す
     feeTaxJPY,
     feeTaxUSD,
     payoneerFeeJPY,
