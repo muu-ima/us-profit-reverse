@@ -212,6 +212,7 @@ export default function Page() {
           <label className="block font-semibold mb-1">売値 (＄) </label>
           <input
             type="number"
+            step="0.01"
             value={sellingPrice}
             onChange={(e) => {
               const raw = e.target.value;
@@ -222,6 +223,9 @@ export default function Page() {
 
               let num = Number(raw);
               if (num < 0) num = 0;
+
+              //小数点第3位以下切り捨て
+              num = Math.floor (num * 100) / 100;
 
               setSellingPrice(num);
             }}
