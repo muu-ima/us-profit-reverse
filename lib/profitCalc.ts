@@ -28,7 +28,6 @@ export function calculateFinalProfitDetailUS({
   categoryFeePercent, //%
   paymentFeePercent, //%
   exchangeRateUSDtoJPY,
-  targetMargin = 0.25,
 
 }: ProfitCalcParamsUS): FinalProfitDetailUS {
   console.log("利益計算に渡すcategoryFeePercent:", categoryFeePercent);
@@ -88,7 +87,7 @@ export function calculateFinalProfitDetailUS({
   const profitMargin = revenueJPYExclTax === 0 ? 0 : (profitJPY / revenueJPYExclTax) * 100;
 
   // 8. 全手数料 (JPY)
-  const totalFeesJPY = totalFeesUSD * exchangeRateUSDtoJPY;
+  // const totalFeesJPY = totalFeesUSD * exchangeRateUSDtoJPY;
 
   // 10. 総コスト (JPY)
   const categoryFeeJPY = categoryFeeUSD * exchangeRateUSDtoJPY;

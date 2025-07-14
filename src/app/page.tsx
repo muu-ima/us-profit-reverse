@@ -16,7 +16,7 @@ import {
 
 
 // import { calculateFinalProfitDetail } from "@/lib/profitCalc";
-import FinalResult from "./components/FinalResult";
+// import FinalResult from "./components/FinalResult";
 
 import FinalResultModal from './components/FinalResultModal';
 
