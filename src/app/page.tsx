@@ -18,6 +18,8 @@ import {
 // import { calculateFinalProfitDetail } from "@/lib/profitCalc";
 import FinalResult from "./components/FinalResult";
 
+import FinalResultModal from './components/FinalResultModal';
+
 
 // ここから型定義を追加
 type ShippingResult = {
@@ -61,6 +63,7 @@ export default function Page() {
   );
   const [result, setResult] = useState<ShippingResult | null>(null);
   const [calcResult, setCalcResult] = useState<CalcResult | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // 配送料データ読み込み
   useEffect(() => {
@@ -153,8 +156,6 @@ export default function Page() {
   const sellingPriceNum = typeof sellingPrice === "number" ? sellingPrice : 0;
   const sellingPriceInclTax = sellingPriceNum + sellingPriceNum * stateTaxRate;
 
-
-
   const final = calcResult
     ? calculateFinalProfitDetailUS({
       sellingPrice: typeof sellingPrice === "number" ? sellingPrice : 0,
@@ -167,7 +168,12 @@ export default function Page() {
     })
     : null;
 
-
+  const isEnabled =
+    sellingPrice !== "" &&
+    costPrice !== "" &&
+    rate !== null &&
+    weight !== null &&
+    selectedCategoryFee !== "";
 
   return (
     <div className="p-4 w-full max-w-7xl mx-auto flex flex-col md:flex-row md:space-x-8 space-y-8 md:space-y-0">
@@ -349,8 +355,31 @@ export default function Page() {
             calcResult={calcResult}
           />
         )}
+        <button
+          onClick={() => setIsModalOpen(true)}
+          disabled={!isEnabled}
+          className={`btn-primary ${isEnabled ? "bg-blue-600 hover:bg-blue-700 text-white cursor-pointer" : "bg-gray-400 cursor-not-allowed text-gray-200"}
+           px-8 py-4 text-lg rounded-full transition-colors duration-300`}
+        >
+          最終利益の詳細を見る
+        </button>
 
-        {final && (
+
+
+        {isModalOpen && final && (
+          <FinalResultModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            shippingMethod={result?.method || ""}
+            shippingJPY={calcResult?.shippingJPY || 0}
+            categoryFeeJPY={final.categoryFeeJPY || 0}
+            data={final}
+            exchangeRateUSDtoJPY={rate ?? 0}
+          />
+        )}
+
+
+        {/* {final && (
           <FinalResult
             shippingMethod={result?.method || ""}
             shippingJPY={calcResult?.shippingJPY || 0}
@@ -358,7 +387,7 @@ export default function Page() {
             data={final}
             exchangeRateUSDtoJPY={rate ?? 0}
           />
-        )}
+        )} */}
       </div>
       {/* チャットアイコンをここで表示 */}
       <ChatIcon />

@@ -23,14 +23,12 @@ export interface FinalProfitDetailUS {
     payoneerFeeJPY: number;
     payoneerFeeUSD: number;
     netProfitJPY: number;
-    grossProfitJPY: number;  // 売上JPY - 仕入れJPY - 送料JPY
+    profitJPY: number;
     sellingPrice: number;           // USD (税抜)
     sellingPriceInclTax: number;   // USD (州税込)
     costPrice: number;             // 円 (仕入れ値)
     paymentFeeJPY: number;  // ← 追加
     paymentFeeUSD: number;
-    spSheetNetProfitJPY: number; //spシートテスト用
-    spSheetRevenueAfterFeesJPY: number;
-    spSheetProfitMargin: number;
+    exchangeFeeJPY: number;
 }
 
