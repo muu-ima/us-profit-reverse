@@ -49,16 +49,16 @@ export function calculateFinalProfitDetailUS({
   const categoryFeeUSD = sellingPriceInclTax * (categoryFeePercent / 100);
   const paymentFeeUSD = sellingPriceInclTax * (paymentFeePercent / 100);
 
+   // Final Value Fee
+  const finalValueFee = 0.40;
+
   // 手数料にかかるTAX (10%) (USD)
-  const feeTaxUSD = (categoryFeeUSD + paymentFeeUSD) * 0.10;
+  const feeTaxUSD = (categoryFeeUSD + paymentFeeUSD + finalValueFee) * 0.10;
 
   // Payoneer手数料 (粗利の2%) → 一旦は州税込み売上 - 基本手数料で粗利計算してから算出
   const grossProfitUSD = sellingPrice - (categoryFeeUSD + paymentFeeUSD + feeTaxUSD);
   const payoneerFeeUSD = grossProfitUSD * 0.02;
 
-  // Final Value Fee
-  const finalValueFee = 0.40;
- 
   // 税還付金 (JPY)
   const exchangeAdjustmentJPY = costPrice * 10 / 110; // 税率10%の場合
 
