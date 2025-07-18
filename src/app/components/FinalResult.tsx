@@ -39,6 +39,7 @@ export default function FinalResult({
         <p>■ カテゴリ手数料 : ${data.categoryFeeUSD.toFixed(2)} / ￥{Math.round(data.categoryFeeUSD * exchangeRateUSDtoJPY).toLocaleString()}</p>
         <p>■ 決済手数料 : ${data.paymentFeeUSD.toFixed(2)} / ￥{Math.round(data.paymentFeeUSD * exchangeRateUSDtoJPY).toLocaleString()}</p>
         <p>■ 手数料税 : ${data.feeTaxUSD.toFixed(2)} / ￥{Math.round(data.feeTaxUSD * exchangeRateUSDtoJPY).toLocaleString()}</p>
+        <p>■ payoneer手数料 : ${data.payoneerFeeUSD.toFixed(2)} / ￥{Math.round(data.payoneerFeeUSD * exchangeRateUSDtoJPY).toLocaleString()}</p>
         <p>■ 為替手数料: ${(data.exchangeFeeJPY / exchangeRateUSDtoJPY).toFixed(2)}  / ￥{data.exchangeFeeJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
         <p>■ 最終価値手数料 : ${(data.finalValueFee).toFixed(2)} / ￥{(data.finalValueFee * exchangeRateUSDtoJPY).toFixed(0)}</p>
         <div className="p-6 bg-white rounded-lg shadow space-y-6">
