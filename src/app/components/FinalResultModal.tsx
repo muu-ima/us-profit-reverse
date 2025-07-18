@@ -7,7 +7,6 @@ import { Dialog } from "@headlessui/react";
 type FinalResultModalProps = {
   shippingMethod: string;
   shippingJPY: number;
-  categoryFeeJPY: number;
   data: FinalProfitDetailUS;
   exchangeRateUSDtoJPY: number;
   isOpen: boolean;           // ← 追加

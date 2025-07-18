@@ -376,7 +376,6 @@ export default function Page() {
             onClose={() => setIsModalOpen(false)}
             shippingMethod={result?.method || ""}
             shippingJPY={calcResult?.shippingJPY || 0}
-            categoryFeeJPY={final.categoryFeeJPY || 0}
             data={final}
             exchangeRateUSDtoJPY={rate ?? 0}
           />

@@ -56,6 +56,9 @@ export function calculateFinalProfitDetailUS({
   const grossProfitUSD = sellingPrice - (categoryFeeUSD + paymentFeeUSD + feeTaxUSD);
   const payoneerFeeUSD = grossProfitUSD * 0.02;
 
+  // Final Value Fee
+  const finalValueFee = 0.40;
+ 
   // 税還付金 (JPY)
   const exchangeAdjustmentJPY = costPrice * 10 / 110; // 税率10%の場合
 
@@ -63,7 +66,7 @@ export function calculateFinalProfitDetailUS({
   const feeRebateJPY = feeTaxUSD * exchangeRateUSDtoJPY
 
   // 全手数料 (USD) 合計
-  const totalFeesUSD = categoryFeeUSD + paymentFeeUSD + feeTaxUSD + payoneerFeeUSD;
+  const totalFeesUSD = categoryFeeUSD + paymentFeeUSD + feeTaxUSD + payoneerFeeUSD + finalValueFee;
 
   // 全手数料引き後 (USD)
   const netSellingUSD = sellingPriceExclTaxUSD - totalFeesUSD;
@@ -86,17 +89,6 @@ export function calculateFinalProfitDetailUS({
   // 売値ベース 利益率
   const profitMargin = revenueJPYExclTax === 0 ? 0 : (profitJPY / revenueJPYExclTax) * 100;
 
-  // 8. 全手数料 (JPY)
-  // const totalFeesJPY = totalFeesUSD * exchangeRateUSDtoJPY;
-
-  // 10. 総コスト (JPY)
-  const categoryFeeJPY = categoryFeeUSD * exchangeRateUSDtoJPY;
-  const paymentFeeJPY = paymentFeeUSD * exchangeRateUSDtoJPY;
-  const payoneerFeeJPY = payoneerFeeUSD * exchangeRateUSDtoJPY;
-  const feeTaxJPY = feeTaxUSD * exchangeRateUSDtoJPY;
-
-  const totalCostJPYRaw = costPrice + shippingJPY + categoryFeeJPY + paymentFeeJPY + feeTaxJPY + payoneerFeeJPY;
-  const totalCostJPY = Math.round(totalCostJPYRaw);
 
   console.log("=== [US 利益計算 DEBUG LOG] ===");
 
@@ -104,24 +96,20 @@ export function calculateFinalProfitDetailUS({
 
 
   return {
-    totalCostJPY,
     grossProfitUSD,
     netProfitJPY,
     profitMargin,
     profitJPY,
-    feeTaxJPY,
     feeTaxUSD,
-    payoneerFeeJPY,
     payoneerFeeUSD,
     exchangeAdjustmentJPY,
     feeRebateJPY,
     categoryFeeUSD,
-    categoryFeeJPY: categoryFeeUSD * exchangeRateUSDtoJPY,
     sellingPrice,
     sellingPriceInclTax,
-    paymentFeeJPY,         // ← 追加
     paymentFeeUSD,
     exchangeFeeJPY,
+    finalValueFee,
     costPrice
   };
 }
