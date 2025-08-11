@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { calculateSellingPriceFromProfitRateWithFees } from "@/lib/profitCalc";
+import { calculateFinalProfitDetailUS, calculateSellingPriceFromProfitRateWithFees } from "@/lib/profitCalc";
 import ChatIcon from "./components/ChatIcon";
 import { useEffect, useState } from "react";
 import { getCheapestShipping, ShippingData } from "@/lib/shipping";
@@ -9,6 +9,7 @@ import ExchangeRate from "./components/ExchangeRate";
 import Result from "./components/Result";
 
 import FinalResultModal from './components/FinalResultModal';
+import { FinalProfitDetailUS } from "@/types/profitCalc";
 
 
 // ここから型定義を追加
@@ -51,11 +52,13 @@ export default function Page() {
   const [selectedCategoryFee, setSelectedCategoryFee] = useState<number | "">(
     ""
   );
-  const [targetProfitRate,setTargetProfitRate] = useState<string>(""); // 空文字で初期化
+  const [targetProfitRate, setTargetProfitRate] = useState<string>(""); // 空文字で初期化
   const [resultUSD, setResultUSD] = useState<number | null>(null);
   const [result, setResult] = useState<ShippingResult | null>(null);
   const [calcResult, setCalcResult] = useState<CalcResult | null>(null);
+  const [finalProfitDetail, setFinalProfitDetail] = useState<FinalProfitDetailUS | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [final, setFinal] = useState<FinalProfitDetailUS | null>(null);
 
   // 配送料データ読み込み
   useEffect(() => {
@@ -90,24 +93,44 @@ export default function Page() {
     weight !== null &&
     selectedCategoryFee !== "";
 
-  const targetProfitRateNumber = targetProfitRate === "" ? 0 : Number(targetProfitRate);
+  const targetProfitRateNumber = targetProfitRate === "" ? 0 : Number(targetProfitRate) / 100;
 
+  //逆算で売値USDを求める
   const handleCalculate = () => {
+    if(costPrice === "" || weight === null || rate === null)return;
+
     const shippingJPY = result?.price ?? 0;
     const categoryFeePercent = typeof selectedCategoryFee === "number" ? selectedCategoryFee : 0;
     const paymentFeePercent = 1.35;
-    const exchangeRateUSDtoJPY = rate ?? 0;
-    const priceUSD = calculateSellingPriceFromProfitRateWithFees({
-      costPrice:typeof costPrice === "number" ? costPrice : 0,
-      shippingJPY,
-      targetProfitRate: targetProfitRateNumber,
-      categoryFeePercent,
-      paymentFeePercent,
-      exchangeRateUSDtoJPY,
-    });
+    const exchangeRateUSDtoJPY = rate;
 
-    setResultUSD(priceUSD);
+  // 逆算で売値USDを求める
+  const priceUSD = calculateSellingPriceFromProfitRateWithFees({
+    costPrice: typeof costPrice === "number" ? costPrice : 0,
+    shippingJPY,
+    targetProfitRate: targetProfitRateNumber,
+    categoryFeePercent,
+    paymentFeePercent,
+    exchangeRateUSDtoJPY,
+  });
+  setResultUSD(priceUSD);
+ 
+ // 売値USDを使って利益詳細を計算
+  const profitDetail = calculateFinalProfitDetailUS({
+    sellingPrice: priceUSD,
+    costPrice: typeof costPrice === "number" ? costPrice : 0,
+    shippingJPY,
+    categoryFeePercent,
+    paymentFeePercent,
+    exchangeRateUSDtoJPY,
+  });
+  setFinalProfitDetail(profitDetail);
+
+  setIsModalOpen(true); // 必要に応じてモーダルを開くなど
 };
+
+  // とりあえずダミーの sellingPriceInclTax を用意
+  const sellingPriceInclTax = 0;
 
   return (
     <div className="p-4 w-full max-w-7xl mx-auto flex flex-col md:flex-row md:space-x-8 space-y-8 md:space-y-0">
@@ -144,34 +167,28 @@ export default function Page() {
         </div>
         {/* 売値 (＄) 入力欄を削除 */}
         <div>
-          <label className="block font-semibold mb-1">売値 (＄) </label>
+          <label className="block font-semibold mb-1">目標利益率 (%)</label>
           <input
             type="number"
             step="0.01"
-            value={sellingPrice}
+            min={0}
+            max={100}
+            value={targetProfitRate}
             onChange={(e) => {
-              const raw = e.target.value;
-              if (raw === "") {
-                setSellingPrice("");
+              const val = e.target.value;
+              if (val === "") {
+                setTargetProfitRate("");
                 return;
               }
-
-              let num = Number(raw);
+              let num = Number(val);
               if (num < 0) num = 0;
-
-              //小数点第3位以下切り捨て
-              num = Math.floor (num * 100) / 100;
-
-              setSellingPrice(num);
+              if (num > 100) num = 100;
+              setTargetProfitRate(num.toString());
             }}
-            placeholder="売値"
+            placeholder="目標利益率"
             className="w-full px-3 py-2 border rounded-md"
           />
-          {rate !== null && sellingPrice !== "" && (
-            <p>概算円価格：約 {Math.round(Number(sellingPrice) * rate)} 円</p>
-          )}
         </div>
-
         <div>
           <label className="block font-semibold mb-1">実重量 (g) </label>
           <input
