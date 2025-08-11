@@ -86,8 +86,21 @@ export default function Page() {
     }
   }, [shippingRates, weight, dimensions]);
 
+  useEffect(() => {
+    if (
+      costPrice !== "" &&
+      weight !== null &&
+      rate !== null &&
+      selectedCategoryFee !== "" &&
+      targetProfitRate !== ""
+    ) {
+      handleCalculate();
+    }
+  }, [costPrice, weight, rate, selectedCategoryFee, targetProfitRate]);
+
+
   const isEnabled =
-    sellingPrice !== "" &&
+    resultUSD !== null &&
     costPrice !== "" &&
     rate !== null &&
     weight !== null &&
@@ -97,40 +110,55 @@ export default function Page() {
 
   //逆算で売値USDを求める
   const handleCalculate = () => {
-    if(costPrice === "" || weight === null || rate === null)return;
+    console.log("handleCalculate params:", {
+      isEnabled,
+      sellingPrice, 
+      costPrice,
+      weight,
+      rate,
+      selectedCategoryFee,
+      targetProfitRateNumber,
+      shippingJPY: result?.price ?? 0
+    });
 
+    if (costPrice === "" || weight === null || rate === null) return;
+    console.log("handleCalculate: 入力不足", { costPrice, weight, rate });
     const shippingJPY = result?.price ?? 0;
     const categoryFeePercent = typeof selectedCategoryFee === "number" ? selectedCategoryFee : 0;
     const paymentFeePercent = 1.35;
     const exchangeRateUSDtoJPY = rate;
 
-  // 逆算で売値USDを求める
-  const priceUSD = calculateSellingPriceFromProfitRateWithFees({
-    costPrice: typeof costPrice === "number" ? costPrice : 0,
-    shippingJPY,
-    targetProfitRate: targetProfitRateNumber,
-    categoryFeePercent,
-    paymentFeePercent,
-    exchangeRateUSDtoJPY,
-  });
-  setResultUSD(priceUSD);
- 
- // 売値USDを使って利益詳細を計算
-  const profitDetail = calculateFinalProfitDetailUS({
-    sellingPrice: priceUSD,
-    costPrice: typeof costPrice === "number" ? costPrice : 0,
-    shippingJPY,
-    categoryFeePercent,
-    paymentFeePercent,
-    exchangeRateUSDtoJPY,
-  });
-  setFinalProfitDetail(profitDetail);
+    // 逆算で売値USDを求める
+    const priceUSD = calculateSellingPriceFromProfitRateWithFees({
+      costPrice: typeof costPrice === "number" ? costPrice : 0,
+      shippingJPY,
+      targetProfitRate: targetProfitRateNumber,
+      categoryFeePercent,
+      paymentFeePercent,
+      exchangeRateUSDtoJPY,
+    });
+    console.log("handleCalculate: 計算されたpriceUSD", priceUSD);
+    setResultUSD(priceUSD);
 
-  setIsModalOpen(true); // 必要に応じてモーダルを開くなど
-};
+    // 売値USDを使って利益詳細を計算
+    const profitDetail = calculateFinalProfitDetailUS({
+      sellingPrice: priceUSD,
+      costPrice: typeof costPrice === "number" ? costPrice : 0,
+      shippingJPY,
+      categoryFeePercent,
+      paymentFeePercent,
+      exchangeRateUSDtoJPY,
+    });
+    
+    console.log("hadleCalculate:計算されたprofitDetail", profitDetail);
+    setFinalProfitDetail(profitDetail);
+
+    setIsModalOpen(true); // 必要に応じてモーダルを開くなど
+  };
 
   // とりあえずダミーの sellingPriceInclTax を用意
-  const sellingPriceInclTax = 0;
+  const sellingPriceInclTax = resultUSD !== null ? resultUSD * 1.07 /*例：7%税込*/ : 0;
+
 
   return (
     <div className="p-4 w-full max-w-7xl mx-auto flex flex-col md:flex-row md:space-x-8 space-y-8 md:space-y-0">
@@ -302,15 +330,16 @@ export default function Page() {
 
 
         {/* 利益結果 */}
-        {rate !== null && sellingPrice !== "" && (
+        {rate !== null && resultUSD !== null && (
           <Result
-            originalPriceUSD={typeof sellingPrice === "number" ? sellingPrice : 0}  // ★ 修正
+            originalPriceUSD={resultUSD ?? 0}  // ここを逆算売値に変更
             priceJPY={typeof sellingPrice === "number" && rate !== null ? sellingPrice * rate : 0}
             sellingPriceInclTax={sellingPriceInclTax}
             exchangeRateUSDtoJPY={rate ?? 0}
             calcResult={calcResult}
           />
         )}
+
         <button
           onClick={() => setIsModalOpen(true)}
           disabled={!isEnabled}
