@@ -1,22 +1,12 @@
 "use client";
 
 import React from "react";
+import { calculateSellingPriceFromProfitRateWithFees } from "@/lib/profitCalc";
 import ChatIcon from "./components/ChatIcon";
 import { useEffect, useState } from "react";
 import { getCheapestShipping, ShippingData } from "@/lib/shipping";
 import ExchangeRate from "./components/ExchangeRate";
 import Result from "./components/Result";
-import {
-  calculateFinalProfitDetailUS,
-  calculateCategoryFeeUS,
-  calculateActualCost,
-  calculateGrossProfit,
-  calculateProfitMargin,
-} from "@/lib/profitCalc";
-
-
-// import { calculateFinalProfitDetail } from "@/lib/profitCalc";
-// import FinalResult from "./components/FinalResult";
 
 import FinalResultModal from './components/FinalResultModal';
 
@@ -61,6 +51,8 @@ export default function Page() {
   const [selectedCategoryFee, setSelectedCategoryFee] = useState<number | "">(
     ""
   );
+  const [targetProfitRate,setTargetProfitRate] = useState<string>(""); // 空文字で初期化
+  const [resultUSD, setResultUSD] = useState<number | null>(null);
   const [result, setResult] = useState<ShippingResult | null>(null);
   const [calcResult, setCalcResult] = useState<CalcResult | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -71,63 +63,6 @@ export default function Page() {
       .then((res) => res.json())
       .then((data) => setShippingRates(data));
   }, []);
-
-  // 計算結果用のuseEffect
-  useEffect(() => {
-    if (
-      sellingPrice !== "" &&
-      costPrice !== "" &&
-      rate !== null &&
-      weight !== null &&
-      result !== null &&
-      result.price !== null &&
-      selectedCategoryFee !== ""
-    ) {
-      //配送料JPYに換算
-      const shippingJPY = result.price ?? 0;
-
-      // ここで売値の変換をする
-      const sellingPriceUSD = typeof sellingPrice === "number" ? sellingPrice : 0;
-      // 円換算は掛け算
-      const sellingPriceJPY = sellingPriceUSD * (rate ?? 0);
-      //カテゴリ手数料JPY計算
-      const categoryFeeJPY = calculateCategoryFeeUS(
-        typeof sellingPrice === "number" && rate !== null
-          ? sellingPrice * rate  // ← USD → 円 にする
-          : 0,
-        typeof selectedCategoryFee === "number" ? selectedCategoryFee : 0
-      );
-
-
-      //実費合計
-      const actualCost = calculateActualCost(
-        typeof costPrice === "number" ? costPrice : 0,
-        shippingJPY,
-        categoryFeeJPY
-      );
-      //粗利計算
-      const grossProfit = calculateGrossProfit(
-        typeof sellingPrice === "number" ? sellingPrice : 0,
-        actualCost
-      );
-      //利益率計算
-      const profitMargin = calculateProfitMargin(grossProfit,
-        typeof sellingPrice === "number" ? sellingPrice : 0
-      );
-
-      setCalcResult({
-        shippingJPY,
-        categoryFeeJPY,
-        actualCost,
-        grossProfit,
-        profitMargin,
-        method: result.method,
-        sellingPriceJPY,
-        rate
-      });
-
-    }
-  }, [sellingPrice, costPrice, rate, weight, result, selectedCategoryFee]);
 
   useEffect(() => {
     fetch("/data/categoryFees.json")
@@ -148,32 +83,31 @@ export default function Page() {
     }
   }, [shippingRates, weight, dimensions]);
 
-  const categoryFeePercent = (calcResult && sellingPrice && rate)
-    ? (calcResult.categoryFeeJPY / (sellingPrice * rate)) * 100
-    : 0;
-
-  const stateTaxRate = 0.0671;
-  const sellingPriceNum = typeof sellingPrice === "number" ? sellingPrice : 0;
-  const sellingPriceInclTax = sellingPriceNum + sellingPriceNum * stateTaxRate;
-
-  const final = calcResult
-    ? calculateFinalProfitDetailUS({
-      sellingPrice: typeof sellingPrice === "number" ? sellingPrice : 0,
-      costPrice: typeof costPrice === "number" ? costPrice : 0,
-      shippingJPY: calcResult.shippingJPY,
-      categoryFeePercent: categoryFeePercent,
-      paymentFeePercent: 1.35, //決済手数料(%)
-      exchangeRateUSDtoJPY: rate ?? 0,
-      targetMargin: 0.30,
-    })
-    : null;
-
   const isEnabled =
     sellingPrice !== "" &&
     costPrice !== "" &&
     rate !== null &&
     weight !== null &&
     selectedCategoryFee !== "";
+
+  const targetProfitRateNumber = targetProfitRate === "" ? 0 : Number(targetProfitRate);
+
+  const handleCalculate = () => {
+    const shippingJPY = result?.price ?? 0;
+    const categoryFeePercent = typeof selectedCategoryFee === "number" ? selectedCategoryFee : 0;
+    const paymentFeePercent = 1.35;
+    const exchangeRateUSDtoJPY = rate ?? 0;
+    const priceUSD = calculateSellingPriceFromProfitRateWithFees({
+      costPrice:typeof costPrice === "number" ? costPrice : 0,
+      shippingJPY,
+      targetProfitRate: targetProfitRateNumber,
+      categoryFeePercent,
+      paymentFeePercent,
+      exchangeRateUSDtoJPY,
+    });
+
+    setResultUSD(priceUSD);
+};
 
   return (
     <div className="p-4 w-full max-w-7xl mx-auto flex flex-col md:flex-row md:space-x-8 space-y-8 md:space-y-0">
@@ -208,6 +142,7 @@ export default function Page() {
             className="w-full px-3 py-2 border rounded-md"
           />
         </div>
+        {/* 売値 (＄) 入力欄を削除 */}
         <div>
           <label className="block font-semibold mb-1">売値 (＄) </label>
           <input
