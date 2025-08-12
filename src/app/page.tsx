@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { calculateFinalProfitDetailUS, calculateSellingPriceFromProfitRateWithFees } from "@/lib/profitCalc";
+import { calculateSellingPriceFromProfitRateWithFees } from "@/lib/profitCalc";
 import ChatIcon from "./components/ChatIcon";
 import { useEffect, useState } from "react";
 import { getCheapestShipping, ShippingData } from "@/lib/shipping";
@@ -153,16 +153,16 @@ export default function Page() {
     setResultUSD(priceUSD);
 
     // 売値USDを使って利益詳細を計算
-    const profitDetail = calculateFinalProfitDetailUS({
-      sellingPrice: priceUSD,
-      costPrice: typeof costPrice === "number" ? costPrice : 0,
-      shippingJPY,
-      categoryFeePercent,
-      paymentFeePercent,
-      exchangeRateUSDtoJPY,
-    });
-    console.log("handleCalculate: 計算されたprofitDetail", profitDetail);
-    setFinalProfitDetail(profitDetail);
+    // const profitDetail = calculateFinalProfitDetailUS({
+    //   sellingPrice: priceUSD,
+    //   costPrice: typeof costPrice === "number" ? costPrice : 0,
+    //   shippingJPY,
+    //   categoryFeePercent,
+    //   paymentFeePercent,
+    //   exchangeRateUSDtoJPY,
+    // });
+    // console.log("handleCalculate: 計算されたprofitDetail", profitDetail);
+    // setFinalProfitDetail(profitDetail);
 
     setIsModalOpen(true); // 必要に応じてモーダルを開くなど
   };
@@ -345,7 +345,7 @@ export default function Page() {
           <Result
             originalPriceUSD={resultUSD ?? 0}  // ここを逆算売値に変更
             priceJPY={typeof sellingPrice === "number" && rate !== null ? sellingPrice * rate : 0}
-            sellingPriceInclTax={sellingPriceInclTax}
+            sellingPriceInclTax={resultUSD * 1.0671}
             exchangeRateUSDtoJPY={rate ?? 0}
             calcResult={calcResult}
           />
