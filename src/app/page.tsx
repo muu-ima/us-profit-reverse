@@ -112,7 +112,7 @@ export default function Page() {
   const handleCalculate = () => {
     console.log("handleCalculate params:", {
       isEnabled,
-      sellingPrice, 
+      sellingPrice,
       costPrice,
       weight,
       rate,
@@ -124,18 +124,30 @@ export default function Page() {
     if (costPrice === "" || weight === null || rate === null) return;
     console.log("handleCalculate: 入力不足", { costPrice, weight, rate });
     const shippingJPY = result?.price ?? 0;
-    const categoryFeePercent = typeof selectedCategoryFee === "number" ? selectedCategoryFee : 0;
+    // const categoryFeePercent = typeof selectedCategoryFee === "number" ? selectedCategoryFee : 0;
+    const categoryFeePercent = Number(selectedCategoryFee) || 0;
     const paymentFeePercent = 1.35;
     const exchangeRateUSDtoJPY = rate;
+    const costPriceJPY = typeof costPrice === "number" ? costPrice : 0;
+
+    console.log("入力値(JPY・%):", {
+      costPriceJPY,
+      shippingJPY,
+      exchangeRateUSDtoJPY,
+      categoryFeePercent,
+      paymentFeePercent,
+      targetProfitRateNumber,
+    });
+
 
     // 逆算で売値USDを求める
     const priceUSD = calculateSellingPriceFromProfitRateWithFees({
-      costPrice: typeof costPrice === "number" ? costPrice : 0,
-      shippingJPY,
+      costPrice: costPriceJPY,
+      shippingJPY: shippingJPY,
       targetProfitRate: targetProfitRateNumber,
       categoryFeePercent,
       paymentFeePercent,
-      exchangeRateUSDtoJPY,
+      exchangeRateUSDtoJPY: rate,
     });
     console.log("handleCalculate: 計算されたpriceUSD", priceUSD);
     setResultUSD(priceUSD);
@@ -149,8 +161,7 @@ export default function Page() {
       paymentFeePercent,
       exchangeRateUSDtoJPY,
     });
-    
-    console.log("hadleCalculate:計算されたprofitDetail", profitDetail);
+    console.log("handleCalculate: 計算されたprofitDetail", profitDetail);
     setFinalProfitDetail(profitDetail);
 
     setIsModalOpen(true); // 必要に応じてモーダルを開くなど

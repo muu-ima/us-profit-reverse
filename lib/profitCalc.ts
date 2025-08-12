@@ -138,7 +138,7 @@ function calculateFees(
   return { feeTaxUSD, payoneerFeeUSD, totalFeesUSD };
 }
 
-// メイン関数
+// メイン計算（JPY返し＋ログ付き）
 export function calculateSellingPriceFromProfitRateWithFees({
   costPrice,
   shippingJPY,
@@ -159,61 +159,104 @@ export function calculateSellingPriceFromProfitRateWithFees({
   const finalValueFee = 0.40;  //固定
   const exchangeFeePerUSD = 3.3
 
-  const totalCostJPY = costPrice + shippingJPY;
 
-  // --- 初期化 ---
-  let estimatedSellingPriceUSD = 1; // 売値USDの初期仮置き値
-  const maxIterations = 100;        // 最大繰り返し回数 (無限ループ防止)
-  const tolerane = 0.0001           // 利益率の誤差許容範囲
+  // JPYをUSDに変換して統一
+  const costPriceUSD = costPrice / exchangeRateUSDtoJPY;
+  // 配送料をUSD換算（追加）
+  const shippingUSD = shippingJPY / exchangeRateUSDtoJPY;
 
-  // --- 反復処理で最適な売値を探す ---
-  for (let i = 0; i < maxIterations; i++) {
-    console.log(`Iteration ${i + 1}`);
-    console.log(`estimatedSellingPriceUSD: ${estimatedSellingPriceUSD.toFixed(2)}`);
-    //手数料を計算
+  let low = costPriceUSD + shippingUSD;// 下限=コスト合計
+  let high = low * 10;                 // 上限=10倍
+
+  const tolerance = 0.0001           // 利益率の誤差許容範囲
+
+  for(let i = 0; i < 100; i++){
+    const mid = (low + high)/2;
+
+  // 手数料計算
     const { totalFeesUSD } = calculateFees(
-      estimatedSellingPriceUSD,
+      mid,
       categoryFeePercent,
       paymentFeePercent,
       finalValueFee,
       stateTaxRate
     );
+    const netSellingUSD = mid - totalFeesUSD;
+    const exchangeFeeUSD = (netSellingUSD * exchangeFeePerUSD) / mid;
+    const netSellingAfterExchangeUSD = netSellingUSD - exchangeFeeUSD;
 
-    // 売上　-　手数料(USD)
-    const netSellingUSD = estimatedSellingPriceUSD - totalFeesUSD;
+    const totalCostUSD = costPriceUSD + shippingUSD;
+    const profitUSD = netSellingAfterExchangeUSD - totalCostUSD;
 
-    // 為替手数料(JPY)
-    const exchangeFeeJPY = netSellingUSD * exchangeFeePerUSD;
+      // ★ 原価基準の利益率
+      const currentProfitRate = profitUSD / totalCostUSD;
 
-    // 手数料後の売上を円に換算(JPY)
-    const netSellingJPY = netSellingUSD * exchangeRateUSDtoJPY - exchangeFeeJPY;
+      // ---ログ表示---
+      console.log(`Iteration ${i + 1}`);
+      console.log({
+        midSellingPriceUSD: mid.toFixed(2),
+        netSellingUSD: netSellingUSD.toFixed(2),
+        exchangeFeeUSD: exchangeFeeUSD.toFixed(2),
+        netSellingAfterExchangeUSD: netSellingAfterExchangeUSD.toFixed(2),
+        totalCostUSD: totalCostUSD.toFixed(2),
+        profitUSD: profitUSD.toFixed(2),
+        currentProfitRate: (currentProfitRate * 100).toFixed(2) + "%",
+        targetProfitRate: (targetProfitRate * 100).toFixed(2) + "%",
+      });
 
-    // 利益　＝　売上　- (原価　+ 送料)
-    const profitJPY = netSellingJPY - totalCostJPY;
+      if(Math.abs(currentProfitRate - targetProfitRate) < tolerance) {
+        const priceJPY = Math.ceil(mid * exchangeRateUSDtoJPY * 100) / 100;
+        console.log(`✅ 収束: ${priceJPY} 円 (USD: ${mid.toFixed(2)})`);
+        return priceJPY;
+      }
 
-    // 実際の利益率計算(JPYベース)
-    const currentProfitRate = profitJPY / (netSellingUSD * exchangeRateUSDtoJPY);
-
-    // 目標との差分
-    const diff = targetProfitRate - currentProfitRate;
-
-
-    console.log("netSellingUSD:", netSellingUSD);
-    console.log("exchangeFeePerUSD:", exchangeFeePerUSD);
-    console.log("exchangeFeeJPY (netSellingUSD * exchangeFeePerUSD):", exchangeFeeJPY);
-    console.log("netSellingJPY (netSellingUSD * rate - exchangeFeeJPY):", netSellingJPY);
-    console.log("totalCostJPY:", totalCostJPY);
-    console.log(`Iteration ${i + 1},diff: ${diff.toFixed(6)}`);
-
-    // 許容範囲なら終了
-    if (Math.abs(diff) < tolerane) break;
-
-    // 売値を微調整
-    estimatedSellingPriceUSD *= 1 + diff;
-  }
-
-  return Math.ceil(estimatedSellingPriceUSD * 100) / 100;
+      if(currentProfitRate < targetProfitRate) {
+        low = mid;
+      } else {
+        high = mid;
+      }
+  } 
+    const finalPriceJPY = Math.ceil(low * exchangeRateUSDtoJPY * 100) / 100;
+    console.log(`⚠ 最大試行回数到達: ${finalPriceJPY} 円 (USD: ${(low).toFixed(2)})`);
+    return finalPriceJPY;
 }
+  // const totalCostUSD = costPriceUSD + shippingUSD;
+
+  // let estimatedSellingPriceUSD = 1; 
+  // const maxIterations = 100;        
+
+
+  // for (let i = 0; i < maxIterations; i++) {
+ 
+  //   const { totalFeesUSD } = calculateFees(
+  //     estimatedSellingPriceUSD,
+  //     categoryFeePercent,
+  //     paymentFeePercent,
+  //     finalValueFee,
+  //     stateTaxRate
+  //   );
+
+
+  //   const netSellingUSD = estimatedSellingPriceUSD - totalFeesUSD;
+
+  //   const exchangeFeeUSD = (netSellingUSD * exchangeFeePerUSD) / estimatedSellingPriceUSD;
+
+  //   const netSellingAfterExchangeUSD = netSellingUSD - exchangeFeeUSD;
+
+  //   const profitUSD = netSellingAfterExchangeUSD - totalCostUSD;
+
+   
+  //   const currentProfitRate = profitUSD / netSellingAfterExchangeUSD;
+  //   const diff = targetProfitRate - currentProfitRate;
+
+  //   if (Math.abs(diff) < tolerane) break;
+
+   
+  //   estimatedSellingPriceUSD *= 1 + diff * 0.5;
+  // }
+
+  // return Math.ceil(estimatedSellingPriceUSD * exchangeRateUSDtoJPY * 100) / 100;
+
 /**
  * カテゴリ手数料額を計算する (US)
  */
