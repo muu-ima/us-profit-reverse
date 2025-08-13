@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { calculateSellingPriceFromProfitRateWithFees } from "@/lib/profitCalc";
+import { calculateSellingPriceFromProfitRateWithFees, calculateFinalProfitDetailUS } from "@/lib/profitCalc";
 import ChatIcon from "./components/ChatIcon";
 import { useEffect, useState } from "react";
 import { getCheapestShipping, ShippingData } from "@/lib/shipping";
@@ -53,7 +53,7 @@ export default function Page() {
     ""
   );
   const [targetProfitRate, setTargetProfitRate] = useState<string>(""); // 空文字で初期化
-  const [resultUSD, setResultUSD] = useState<number | null>(null);
+  const [resultUSD, setResultUSD] = useState<{ priceUSD: number; priceJPY: number } | null>(null);
   const [result, setResult] = useState<ShippingResult | null>(null);
   const [calcResult, setCalcResult] = useState<CalcResult | null>(null);
   const [finalProfitDetail, setFinalProfitDetail] = useState<FinalProfitDetailUS | null>(null);
@@ -112,7 +112,6 @@ export default function Page() {
   const handleCalculate = () => {
     console.log("handleCalculate params:", {
       isEnabled,
-      sellingPrice,
       costPrice,
       weight,
       rate,
@@ -124,7 +123,6 @@ export default function Page() {
     if (costPrice === "" || weight === null || rate === null) return;
     console.log("handleCalculate: 入力不足", { costPrice, weight, rate });
     const shippingJPY = result?.price ?? 0;
-    // const categoryFeePercent = typeof selectedCategoryFee === "number" ? selectedCategoryFee : 0;
     const categoryFeePercent = Number(selectedCategoryFee) || 0;
     const paymentFeePercent = 1.35;
     const exchangeRateUSDtoJPY = rate;
@@ -140,7 +138,7 @@ export default function Page() {
     });
 
 
-    // 逆算で売値USDを求める
+    // 逆算で売値計算
     const priceUSD = calculateSellingPriceFromProfitRateWithFees({
       costPrice: costPriceJPY,
       shippingJPY: shippingJPY,
@@ -152,24 +150,39 @@ export default function Page() {
     console.log("handleCalculate: 計算されたpriceUSD", priceUSD);
     setResultUSD(priceUSD);
 
-    // 売値USDを使って利益詳細を計算
-    // const profitDetail = calculateFinalProfitDetailUS({
-    //   sellingPrice: priceUSD,
-    //   costPrice: typeof costPrice === "number" ? costPrice : 0,
-    //   shippingJPY,
-    //   categoryFeePercent,
-    //   paymentFeePercent,
-    //   exchangeRateUSDtoJPY,
-    // });
-    // console.log("handleCalculate: 計算されたprofitDetail", profitDetail);
-    // setFinalProfitDetail(profitDetail);
+    // 売値JPY (税抜) を計算 (priceUSD.priceJPY は税抜)
+    const sellingPrice = priceUSD.priceJPY;
+
+    //ここでcalcResultがある場合はcategoryFeePercentを逆算
+    let categoryFeePercentCalc = categoryFeePercent;
+    if(calcResult && sellingPrice && rate) {
+      categoryFeePercentCalc = (calcResult.categoryFeeJPY / (sellingPrice * rate)) * 100;
+    }
+
+    // 州税率
+    const stateTaxRate = 0.0671;
+
+    // 州税込みの売値 (円) を計算
+    const sellingPriceInclTax = sellingPrice + (sellingPrice * stateTaxRate);
+
+    // 最終利益詳細を計算
+    const finalProfitDetails = calculateFinalProfitDetailUS({
+      sellingPrice: sellingPrice,
+      costPrice: costPriceJPY,
+      shippingJPY: shippingJPY,
+      categoryFeePercent: categoryFeePercentCalc,
+      paymentFeePercent,
+      exchangeRateUSDtoJPY: rate,
+      targetMargin: targetProfitRateNumber,
+    });
+
+    console.log("finalProfitDetails: 計算されたfinalProfitDetails",finalProfitDetails);
+
+    setFinalProfitDetail(finalProfitDetails);
+    setFinal(finalProfitDetails);
 
     setIsModalOpen(true); // 必要に応じてモーダルを開くなど
   };
-
-  // とりあえずダミーの sellingPriceInclTax を用意
-  const sellingPriceInclTax = resultUSD !== null ? resultUSD * 1.07 /*例：7%税込*/ : 0;
-
 
   return (
     <div className="p-4 w-full max-w-7xl mx-auto flex flex-col md:flex-row md:space-x-8 space-y-8 md:space-y-0">
@@ -343,9 +356,8 @@ export default function Page() {
         {/* 利益結果 */}
         {rate !== null && resultUSD !== null && (
           <Result
-            originalPriceUSD={resultUSD ?? 0}  // ここを逆算売値に変更
-            priceJPY={typeof sellingPrice === "number" && rate !== null ? sellingPrice * rate : 0}
-            sellingPriceInclTax={resultUSD * 1.0671}
+            originalPriceUSD={resultUSD.priceUSD}  // ここを逆算売値に変更
+            priceJPY={resultUSD.priceJPY}
             exchangeRateUSDtoJPY={rate ?? 0}
             calcResult={calcResult}
           />

@@ -2,16 +2,12 @@
 
 import { FinalProfitDetailUS } from '@/types/profitCalc';
 
-
-
 type FinalResultProps = {
   shippingMethod: string;
   shippingJPY: number;
   data: FinalProfitDetailUS;
   exchangeRateUSDtoJPY: number; // 追加
 };
-
-
 
 export default function FinalResult({
   shippingMethod,
@@ -24,8 +20,8 @@ export default function FinalResult({
       <h2 className="text-lg font-bold mb-2">【最終利益の詳細】</h2>
 
       <div className="space-y-1">
-        <p>■ 売上 (税抜) : ${data.sellingPrice.toFixed(2)} / ￥{Math.round(data.sellingPrice * exchangeRateUSDtoJPY).toLocaleString()}</p>
-        <p>■ 州税込売上 : ${data.sellingPriceInclTax.toFixed(2)} / ￥{Math.round(data.sellingPriceInclTax * exchangeRateUSDtoJPY).toLocaleString()}</p>
+        <p>■ 売上 (税抜) : ${(data.sellingPrice / exchangeRateUSDtoJPY).toFixed(2)} / ￥{Math.round(data.sellingPrice).toLocaleString()}</p>
+        <p>■ 州税込売上 : ${(data.sellingPriceInclTax / exchangeRateUSDtoJPY).toFixed(2)} / ￥{Math.round(data.sellingPriceInclTax).toLocaleString()}</p>
 
         <div className="border-t border-gray-300 my-2" />
 
@@ -36,10 +32,10 @@ export default function FinalResult({
         <div className="border-t border-gray-300 my-2" />
 
         <p className="text-gray-600 font-semibold my-1">【州税込売上から計算】</p>
-        <p>■ カテゴリ手数料 : ${data.categoryFeeUSD.toFixed(2)} / ￥{Math.round(data.categoryFeeUSD * exchangeRateUSDtoJPY).toLocaleString()}</p>
-        <p>■ 決済手数料 : ${data.paymentFeeUSD.toFixed(2)} / ￥{Math.round(data.paymentFeeUSD * exchangeRateUSDtoJPY).toLocaleString()}</p>
-        <p>■ 手数料税 : ${data.feeTaxUSD.toFixed(2)} / ￥{Math.round(data.feeTaxUSD * exchangeRateUSDtoJPY).toLocaleString()}</p>
-        <p>■ payoneer手数料 : ${data.payoneerFeeUSD.toFixed(2)} / ￥{Math.round(data.payoneerFeeUSD * exchangeRateUSDtoJPY).toLocaleString()}</p>
+        <p>■ カテゴリ手数料 : ${(data.categoryFeeUSD / exchangeRateUSDtoJPY).toFixed(2)} / ￥{Math.round(data.categoryFeeUSD).toLocaleString()}</p>
+        <p>■ 決済手数料 : ${(data.paymentFeeUSD / exchangeRateUSDtoJPY).toFixed(2)} / ￥{Math.round(data.paymentFeeUSD).toLocaleString()}</p>
+        <p>■ 手数料税 : ${(data.feeTaxUSD / exchangeRateUSDtoJPY).toFixed(2)} / ￥{Math.round(data.feeTaxUSD).toLocaleString()}</p>
+        <p>■ payoneer手数料 : ${(data.payoneerFeeUSD / exchangeRateUSDtoJPY).toFixed(2)} / ￥{Math.round(data.payoneerFeeUSD).toLocaleString()}</p>
         <p>■ 為替手数料: ${(data.exchangeFeeJPY / exchangeRateUSDtoJPY).toFixed(2)}  / ￥{data.exchangeFeeJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
         <div className="p-6 bg-white rounded-lg shadow space-y-6">
           <h2 className="text-xl font-bold border-b pb-2">【損益結果】</h2>
