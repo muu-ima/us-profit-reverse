@@ -150,8 +150,8 @@ export default function Page() {
     console.log("handleCalculate: 計算されたpriceUSD", priceUSD);
     setResultUSD(priceUSD);
 
-    // 売値JPY (税抜) を計算 (priceUSD.priceJPY は税抜)
-    const sellingPrice = priceUSD.priceJPY;
+    // sellingPrice は USD単価にする（税抜）
+    const sellingPrice = priceUSD.priceUSD;
 
     //ここでcalcResultがある場合はcategoryFeePercentを逆算
     let categoryFeePercentCalc = categoryFeePercent;

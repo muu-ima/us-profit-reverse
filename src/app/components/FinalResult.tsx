@@ -15,12 +15,19 @@ export default function FinalResult({
   data,
   exchangeRateUSDtoJPY,
 }: FinalResultProps) {
+   const USDtoJPY =
+    exchangeRateUSDtoJPY > 1 ? exchangeRateUSDtoJPY : 1 / exchangeRateUSDtoJPY;
+  const JPYtoUSD = 1 / USDtoJPY;
+  console.log("FinalResult data:", data);
+  console.log("exchangeRatetoJPY:", exchangeRateUSDtoJPY);
+  console.log("sellingPrice:", data.sellingPrice);
+  console.log("netProfitJPY:", data.netProfitJPY);
   return (
     <div className="p-4 border rounded-lg shadow space-y-2 bg-white">
       <h2 className="text-lg font-bold mb-2">【最終利益の詳細】</h2>
 
       <div className="space-y-1">
-        <p>■ 売上 (税抜) : ${(data.sellingPrice / exchangeRateUSDtoJPY).toFixed(2)} / ￥{Math.round(data.sellingPrice).toLocaleString()}</p>
+        <p>■ 売上 (税抜) : ${(data.sellingPriceJPY * JPYtoUSD).toFixed(2)}  / ￥{Math.round(data.sellingPriceJPY / exchangeRateUSDtoJPY).toLocaleString()}</p>
         <p>■ 州税込売上 : ${(data.sellingPriceInclTax / exchangeRateUSDtoJPY).toFixed(2)} / ￥{Math.round(data.sellingPriceInclTax).toLocaleString()}</p>
 
         <div className="border-t border-gray-300 my-2" />
@@ -35,7 +42,7 @@ export default function FinalResult({
         <p>■ カテゴリ手数料 : ${(data.categoryFeeUSD / exchangeRateUSDtoJPY).toFixed(2)} / ￥{Math.round(data.categoryFeeUSD).toLocaleString()}</p>
         <p>■ 決済手数料 : ${(data.paymentFeeUSD / exchangeRateUSDtoJPY).toFixed(2)} / ￥{Math.round(data.paymentFeeUSD).toLocaleString()}</p>
         <p>■ 手数料税 : ${(data.feeTaxUSD / exchangeRateUSDtoJPY).toFixed(2)} / ￥{Math.round(data.feeTaxUSD).toLocaleString()}</p>
-        <p>■ payoneer手数料 : ${(data.payoneerFeeUSD / exchangeRateUSDtoJPY).toFixed(2)} / ￥{Math.round(data.payoneerFeeUSD).toLocaleString()}</p>
+        <p>■ payoneer手数料 : ${data.payoneerFeeUSD.toFixed(2)} / ￥{Math.round(data.payoneerFeeUSD).toLocaleString()}</p>
         <p>■ 為替手数料: ${(data.exchangeFeeJPY / exchangeRateUSDtoJPY).toFixed(2)}  / ￥{data.exchangeFeeJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
         <div className="p-6 bg-white rounded-lg shadow space-y-6">
           <h2 className="text-xl font-bold border-b pb-2">【損益結果】</h2>

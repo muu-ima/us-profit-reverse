@@ -26,5 +26,17 @@ export interface FinalProfitDetailUS {
     paymentFeeUSD: number;
     exchangeFeeJPY: number;
     finalValueFee: number;
+
+    // --- 追加（UI用）---
+    sellingPriceJPY: number;
+    sellingPriceIncTaxJPY: number;
+    categoryFeeJPY: number;
+    paymentFeeJPY: number;
+    feeTaxJPY: number;
+    payoneerFeeJPY: number;
+    finalValueFeeJPY: number;
+
+    // おまけ：表示に便利
+    netSellingUSD: number;
 }
 

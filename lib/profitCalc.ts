@@ -2,95 +2,112 @@
 
 import { ProfitCalcParamsUS, FinalProfitDetailUS } from '@/types/profitCalc';
 
+// 定数まとめ
+const STATE_TAX_RATE = 0.0671;      // 州税率 6.71%
+const FINAL_VALUE_FEE = 0.40;       // 固定Final Value Fee (USD)
+const EXCHANGE_FEE_PER_USD = 3.3;   // 両替手数料（JPY/1USD）
+const FEE_TAX_RATE = 0.10;          // 手数料にかかる税率 10%
+const PAYONEER_FEE_RATE = 0.02;     // Payoneer手数料率 2%
+
+export const toJPY = (usd: number, rate: number) => Math.round(usd * rate);
+export const toUSD = (jpy: number, rate: number) => jpy / rate;
+
+/**
+ * 手数料計算を共通化
+ */
+function calculateFees(
+  sellingPriceUSD: number,
+  categoryFeePercent: number,
+  paymentFeePercent: number,
+) {
+  const sellingPriceInclTaxUSD = sellingPriceUSD * (1 + STATE_TAX_RATE);
+
+  const categoryFeeUSD = sellingPriceInclTaxUSD * (categoryFeePercent / 100);
+  const paymentFeeUSD = sellingPriceInclTaxUSD * (paymentFeePercent / 100);
+
+  const feeTaxUSD = (categoryFeeUSD + paymentFeeUSD + FINAL_VALUE_FEE) * FEE_TAX_RATE;
+
+  const grossProfitUSD = sellingPriceUSD - (categoryFeeUSD + paymentFeeUSD + feeTaxUSD);
+
+  const payoneerFeeUSD = grossProfitUSD * PAYONEER_FEE_RATE;
+
+  const totalFeesUSD = categoryFeeUSD + paymentFeeUSD + feeTaxUSD + payoneerFeeUSD + FINAL_VALUE_FEE;
+
+  return {
+    categoryFeeUSD,
+    paymentFeeUSD,
+    feeTaxUSD,
+    payoneerFeeUSD,
+    totalFeesUSD,
+  };
+}
+
 /**
  * 最終利益の詳細を計算する (US版)
- * @param {Object} params - パラメータオブジェクト
- * @param {number} params.sellingPrice - 売値（USD）
- * @param {number} params.costPrice - 仕入れ値（JPY）
- * @param {number} params.shippingJPY - 配送料（JPY）
- * @param {number} params.categoryFeePercent - カテゴリ手数料（%）
- * @param {number} params.paymentFeePercent - 決済手数料（%）
- * @param {number} params.platformRate - プラットフォーム手数料率（%）
- *
- * @returns {Object} 最終利益の詳細
- * @returns {number} return.totalCost - 総コスト (JPY)
- * @returns {number} return.profit - 利益 (JPY)
- * @returns {number} return.profitMargin - 利益率 (%)
- * @returns {number} return.suggestedPrice - 目標利益率を達成するための推奨販売価格 (JPY)
- * @returns {number} return.feeTax - 手数料にかかるタックス額 (JPY)
- * @returns {number} return.payoneerFee - ペイオニア手数料 (JPY)
- * @returns {number} return.exchangeAdjustmentJPY - 為替調整額 (JPY)
  */
 export function calculateFinalProfitDetailUS({
-  sellingPrice, //USD
-  costPrice, //JPY
-  shippingJPY, //JPY
-  categoryFeePercent, //%
-  paymentFeePercent, //%
+  sellingPrice,     // USD
+  costPrice,       // JPY
+  shippingJPY,     // JPY
+  categoryFeePercent,
+  paymentFeePercent,
   exchangeRateUSDtoJPY,
-
 }: ProfitCalcParamsUS): FinalProfitDetailUS {
-  console.log("利益計算に渡すcategoryFeePercent:", categoryFeePercent);
+
   if (!exchangeRateUSDtoJPY) {
     throw new Error("exchangeRateUSDtoJPY が必要です！");
   }
 
-  // 州税抜き売上 (USD) 
-  const sellingPriceExclTaxUSD = sellingPrice;
-
-  // 州税抜き売上 (JPY)
+  // 売上 (税抜き)
   const revenueJPYExclTax = sellingPrice * exchangeRateUSDtoJPY;
 
-  // 州税6.71%を計算、州税込みの売上 (USD)
-  const stateTaxRate = 0.0671;
-  const sellingPriceInclTax = sellingPrice * (1 + stateTaxRate);
-
-  // カテゴリ手数料 & 決済手数料 
-  const categoryFeeUSD = sellingPriceInclTax * (categoryFeePercent / 100);
-  const paymentFeeUSD = sellingPriceInclTax * (paymentFeePercent / 100);
-
-   // Final Value Fee
-  const finalValueFee = 0.40;
-
-  // 手数料にかかるTAX (10%) (USD)
-  const feeTaxUSD = (categoryFeeUSD + paymentFeeUSD + finalValueFee) * 0.10;
-
-  // Payoneer手数料 (粗利の2%) → 一旦は州税込み売上 - 基本手数料で粗利計算してから算出
-  const grossProfitUSD = sellingPrice - (categoryFeeUSD + paymentFeeUSD + feeTaxUSD);
-  const payoneerFeeUSD = grossProfitUSD * 0.02;
-
-  // 税還付金 (JPY)
-  const exchangeAdjustmentJPY = costPrice * 10 / 110; // 税率10%の場合
+  // 手数料計算
+  const {
+    categoryFeeUSD,
+    paymentFeeUSD,
+    feeTaxUSD,
+    payoneerFeeUSD,
+    totalFeesUSD,
+  } = calculateFees(sellingPrice, categoryFeePercent, paymentFeePercent);
 
   // 手数料還付金 (JPY)
-  const feeRebateJPY = feeTaxUSD * exchangeRateUSDtoJPY
+  const feeRebateJPY = feeTaxUSD * exchangeRateUSDtoJPY;
 
-  // 全手数料 (USD) 合計
-  const totalFeesUSD = categoryFeeUSD + paymentFeeUSD + feeTaxUSD + payoneerFeeUSD + finalValueFee;
+  // 税還付金 (JPY) ※税率10%の場合
+  const exchangeAdjustmentJPY = costPrice * 10 / 110;
 
-  // 全手数料引き後 (USD)
-  const netSellingUSD = sellingPriceExclTaxUSD - totalFeesUSD;
+  // 全手数料差引後の売上 (USD)
+  const netSellingUSD = sellingPrice - totalFeesUSD;
 
-  // １ドル辺り3.3円手数料
-  const exchangeFeePerUSD = 3.3; // 1USD あたり 3.3円の両替手数料
+  // 両替手数料 (JPY) - 1USDあたりEXCHANGE_FEE_PER_USD円
+  const exchangeFeeJPY = netSellingUSD * EXCHANGE_FEE_PER_USD;
 
-  // 両替手数料 (JPY)
-  const exchangeFeeJPY = netSellingUSD * exchangeFeePerUSD;
-
-  // 正味JPY
+  // 正味JPY売上 = USD売上 - 手数料 をJPY換算後、両替手数料を引く
   const netSellingJPY = (netSellingUSD * exchangeRateUSDtoJPY) - exchangeFeeJPY;
 
-  // 仕入れ値と送料（JPY）を差し引く
+  // 仕入れ・配送料差引後利益 (JPY)
   const netProfitJPY = netSellingJPY - costPrice - shippingJPY;
 
-  //  最終損益
+  // 最終利益 = 税還付金 + 手数料還付金を加算
   const profitJPY = netProfitJPY + exchangeAdjustmentJPY + feeRebateJPY;
 
-  // 売値ベース 利益率
+  // 利益率 (%)
   const profitMargin = revenueJPYExclTax === 0 ? 0 : (profitJPY / revenueJPYExclTax) * 100;
 
+  // 州税込売上(USD)
+  const sellingPriceInclTax = sellingPrice * (1 + STATE_TAX_RATE);
+
+  // ▼ UIで「逆変換」しなくていいように、JPY版も同時に持たせる
+  const sellingPriceJPY = Math.round(sellingPrice * exchangeRateUSDtoJPY);
+  const sellingPriceIncTaxJPY = Math.round(sellingPriceInclTax * exchangeRateUSDtoJPY);
+  const categoryFeeJPY = Math.round(categoryFeeUSD * exchangeRateUSDtoJPY);
+  const paymentFeeJPY = Math.round(paymentFeeUSD * exchangeRateUSDtoJPY);
+  const feeTaxJPY = Math.round(feeTaxUSD * exchangeRateUSDtoJPY);
+  const payoneerFeeJPY = Math.round(paymentFeeUSD * exchangeRateUSDtoJPY);
+  const finalValueFeeJPY = Math.round(FINAL_VALUE_FEE * exchangeRateUSDtoJPY);
+
   return {
-    grossProfitUSD,
+    grossProfitUSD: sellingPrice - (categoryFeeUSD + paymentFeeUSD + feeTaxUSD),
     netProfitJPY,
     profitMargin,
     profitJPY,
@@ -103,41 +120,26 @@ export function calculateFinalProfitDetailUS({
     sellingPriceInclTax,
     paymentFeeUSD,
     exchangeFeeJPY,
-    finalValueFee,
-    costPrice
-  };
+    finalValueFee: FINAL_VALUE_FEE,
+    costPrice,
+
+    // ▼ 追加（UIが逆算不要に）
+    sellingPriceJPY,
+    sellingPriceIncTaxJPY,
+    categoryFeeJPY,
+    paymentFeeJPY,
+    feeTaxJPY,
+    payoneerFeeJPY,
+    finalValueFeeJPY,
+
+   // 参考：表示に便利
+    netSellingUSD,
+  } as FinalProfitDetailUS;
 }
+
 /**
- * 目標利益率から販売価格（USD）を逆算して計算します。s
- * @param costPrice 原価(JPY)
- * @param shippingJPY 配送料(JPY)
- * @param targetProfitRate 目標利益率(例：0.2)
- * @param categoryFeePercent カテゴリ手数料率
- * @param {number} params.paymentFeePercent - 決済手数料（%） 
- * @param exchangeRateUSDtoJPY
- * @returns 自動計算された販売価格(USD)
+ * 目標利益率から販売価格（USD）を逆算する関数
  */
-
-
-// 手数料を個別に計算する補助関数
-function calculateFees(
-  sellingPrice: number,
-  categoryFeePercent: number,
-  paymentFeePercent: number,
-  finalValueFee: number,
-  stateTaxRate: number
-): { feeTaxUSD: number; payoneerFeeUSD: number; totalFeesUSD: number } {
-  const sellingPriceInclTax = sellingPrice * (1 + stateTaxRate);
-  const categoryFeeUSD = sellingPriceInclTax * (categoryFeePercent / 100);
-  const paymentFeeUSD = sellingPriceInclTax * (paymentFeePercent / 100);
-  const feeTaxUSD = (categoryFeeUSD + paymentFeeUSD + finalValueFee) * 0.10;
-  const grossProfitUSD = sellingPrice - (categoryFeeUSD + paymentFeeUSD + feeTaxUSD);
-  const payoneerFeeUSD = grossProfitUSD * 0.02;
-  const totalFeesUSD = categoryFeeUSD + paymentFeeUSD + feeTaxUSD + payoneerFeeUSD
-  return { feeTaxUSD, payoneerFeeUSD, totalFeesUSD };
-}
-
-// メイン計算（JPY返し＋ログ付き）
 export function calculateSellingPriceFromProfitRateWithFees({
   costPrice,
   shippingJPY,
@@ -146,70 +148,46 @@ export function calculateSellingPriceFromProfitRateWithFees({
   paymentFeePercent,
   exchangeRateUSDtoJPY,
 }: {
-  costPrice: number,
-  shippingJPY: number,
-  targetProfitRate: number,
-  categoryFeePercent: number,
-  paymentFeePercent: number,
-  exchangeRateUSDtoJPY: number,
+  costPrice: number;
+  shippingJPY: number;
+  targetProfitRate: number; // 例: 0.3 = 30%
+  categoryFeePercent: number;
+  paymentFeePercent: number;
+  exchangeRateUSDtoJPY: number;
 }): { priceUSD: number; priceJPY: number } {
-  // --- 定数（この関数内で固定値として使われるもの） ---
-  const stateTaxRate = 0.0671; //州税率
-  const finalValueFee = 0.40;  //固定
-  const exchangeFeePerUSD = 3.3
 
-
-  // JPYをUSDに変換して統一
   const costPriceUSD = costPrice / exchangeRateUSDtoJPY;
-  // 配送料をUSD換算（追加）
   const shippingUSD = shippingJPY / exchangeRateUSDtoJPY;
 
-  let low = costPriceUSD + shippingUSD;// 下限=コスト合計
-  let high = low * 10;                 // 上限=10倍
+  let low = costPriceUSD + shippingUSD;
+  let high = low * 10;
 
-  const tolerance = 0.0001           // 利益率の誤差許容範囲
+  const tolerance = 0.0001;
 
   for (let i = 0; i < 100; i++) {
     const mid = (low + high) / 2;
 
     // 手数料計算
-    const { totalFeesUSD } = calculateFees(
-      mid,
-      categoryFeePercent,
-      paymentFeePercent,
-      finalValueFee,
-      stateTaxRate
-    );
+    const {
+      totalFeesUSD,
+    } = calculateFees(mid, categoryFeePercent, paymentFeePercent);
+
     const netSellingUSD = mid - totalFeesUSD;
-    const exchangeFeeUSD = (netSellingUSD * exchangeFeePerUSD) / mid;
+
+    // 両替手数料をUSDに換算 (JPY換算してからUSDに戻す形)
+    const exchangeFeeUSD = (netSellingUSD * EXCHANGE_FEE_PER_USD) / exchangeRateUSDtoJPY;
+
     const netSellingAfterExchangeUSD = netSellingUSD - exchangeFeeUSD;
 
     const totalCostUSD = costPriceUSD + shippingUSD;
+
     const profitUSD = netSellingAfterExchangeUSD - totalCostUSD;
 
-    // ★ 原価基準の利益率
     const currentProfitRate = profitUSD / totalCostUSD;
-
-    // ---ログ表示---
-    console.log(`Iteration ${i + 1}`);
-    console.log({
-      midSellingPriceUSD: mid.toFixed(2),
-      netSellingUSD: netSellingUSD.toFixed(2),
-      exchangeFeeUSD: exchangeFeeUSD.toFixed(2),
-      netSellingAfterExchangeUSD: netSellingAfterExchangeUSD.toFixed(2),
-      totalCostUSD: totalCostUSD.toFixed(2),
-      profitUSD: profitUSD.toFixed(2),
-      currentProfitRate: (currentProfitRate * 100).toFixed(2) + "%",
-      targetProfitRate: (targetProfitRate * 100).toFixed(2) + "%",
-    });
 
     if (Math.abs(currentProfitRate - targetProfitRate) < tolerance) {
       const priceJPY = Math.ceil(mid * exchangeRateUSDtoJPY * 100) / 100;
-      console.log(`✅ 収束: ${priceJPY} 円 (USD: ${mid.toFixed(2)})`);
-      return {
-        priceUSD: mid,
-        priceJPY: priceJPY
-      };
+      return { priceUSD: mid, priceJPY };
     }
 
     if (currentProfitRate < targetProfitRate) {
@@ -218,12 +196,9 @@ export function calculateSellingPriceFromProfitRateWithFees({
       high = mid;
     }
   }
+
   const finalPriceJPY = Math.ceil(low * exchangeRateUSDtoJPY * 100) / 100;
-  console.log(`⚠ 最大試行回数到達: ${finalPriceJPY} 円 (USD: ${(low).toFixed(2)})`);
-  return {
-    priceUSD: low,
-    priceJPY: finalPriceJPY
-  };
+  return { priceUSD: low, priceJPY: finalPriceJPY };
 }
 
 /**
@@ -233,8 +208,6 @@ export function calculateCategoryFeeUS(
   sellingPrice: number,
   categoryFeePercent: number
 ): number {
-  console.log("売値 (JPY):", sellingPrice);
-  console.log("カテゴリ手数料率(%):", categoryFeePercent);
   return sellingPrice * (categoryFeePercent / 100);
 }
 
@@ -243,7 +216,8 @@ export function calculateCategoryFeeUS(
  */
 export function convertShippingPriceToJPY(
   shippingPriceUSD: number,
-  exchangeRateUSDtoJPY: number): number {
+  exchangeRateUSDtoJPY: number
+): number {
   return shippingPriceUSD * exchangeRateUSDtoJPY;
 }
 
