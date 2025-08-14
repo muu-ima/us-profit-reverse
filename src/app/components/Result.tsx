@@ -21,8 +21,7 @@ type ResultProps = {
 
 const stateTaxRate = 0.0671; // 州税率（約6.71%）
 
-export default function Result({ originalPriceUSD, priceJPY,
-    exchangeRateUSDtoJPY,calcResult }: ResultProps) {
+export default function Result({ originalPriceUSD, priceJPY, }: ResultProps) {
 
     const priceJPYIncTax = priceJPY * (1 + stateTaxRate);
 

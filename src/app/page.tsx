@@ -40,7 +40,6 @@ export default function Page() {
   // State管理
   const [shippingRates, setShippingRates] = useState<ShippingData | null>(null);
   const [costPrice, setCostPrice] = useState<number | "">("");
-  const [sellingPrice, setSellingPrice] = useState<number | "">("");
   const [weight, setWeight] = useState<number | null>(null);
   const [dimensions, setDimensions] = useState({
     length: 0,
@@ -56,7 +55,7 @@ export default function Page() {
   const [resultUSD, setResultUSD] = useState<{ priceUSD: number; priceJPY: number } | null>(null);
   const [result, setResult] = useState<ShippingResult | null>(null);
   const [calcResult, setCalcResult] = useState<CalcResult | null>(null);
-  const [finalProfitDetail, setFinalProfitDetail] = useState<FinalProfitDetailUS | null>(null);
+  const [_finalProfitDetail, setFinalProfitDetail] = useState<FinalProfitDetailUS | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [final, setFinal] = useState<FinalProfitDetailUS | null>(null);
 
@@ -159,11 +158,6 @@ export default function Page() {
       categoryFeePercentCalc = (calcResult.categoryFeeJPY / (sellingPrice * rate)) * 100;
     }
 
-    // 州税率
-    const stateTaxRate = 0.0671;
-
-    // 州税込みの売値 (円) を計算
-    const sellingPriceInclTax = sellingPrice + (sellingPrice * stateTaxRate);
 
     // 最終利益詳細を計算
     const finalProfitDetails = calculateFinalProfitDetailUS({
