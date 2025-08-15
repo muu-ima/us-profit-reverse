@@ -62,7 +62,7 @@ export function calculateFinalProfitDetailUS({
   const revenueJPYExclTax = sellingPrice * exchangeRateUSDtoJPY;
   // 州税込売上(USD)
   const sellingPriceInclTax = sellingPrice * (1 + STATE_TAX_RATE);
-  // 州税込売上(JPY)
+  // 州税込売上(USD)
   const revenueJPYInclTax = sellingPriceInclTax * exchangeRateUSDtoJPY;
   // 手数料計算
   const {
@@ -94,8 +94,8 @@ export function calculateFinalProfitDetailUS({
   // 最終利益 = 税還付金 + 手数料還付金を加算
   const profitJPY = netProfitJPY + exchangeAdjustmentJPY + feeRebateJPY;
 
-  // 利益率 (%): 州税抜売上を母数にする
-  const profitMargin = revenueJPYExclTax === 0 ? 0 : (profitJPY / revenueJPYExclTax) * 100;
+  // UIが「州税込売上から計算」なので税込み売上を母数に
+  const profitMargin = revenueJPYExclTax === 0 ? 0 : (profitJPY / revenueJPYInclTax) * 100;
 
 
 
@@ -142,6 +142,9 @@ export function calculateFinalProfitDetailUS({
 /**
  * 目標利益率から販売価格（USD）を逆算する関数
  */
+
+const MAX_PRICE_USD = 800; // ←固定上限
+
 export function calculateSellingPriceFromProfitRateWithFees({
   costPrice,
   shippingJPY,
@@ -157,196 +160,49 @@ export function calculateSellingPriceFromProfitRateWithFees({
   paymentFeePercent: number;
   exchangeRateUSDtoJPY: number;
 }): { priceUSD: number; priceJPY: number } {
- const toJPY = (usd: number) => usd * exchangeRateUSDtoJPY;
-  // const costPriceUSD = costPrice / exchangeRateUSDtoJPY;
-  // const shippingUSD = shippingJPY / exchangeRateUSDtoJPY;
 
-  // let low = costPriceUSD + shippingUSD;
-  // let high = low * 10;
+  const costPriceUSD = costPrice / exchangeRateUSDtoJPY;
+  const shippingUSD = shippingJPY / exchangeRateUSDtoJPY;
 
-  // const tolerance = 0.0001;
+  let low = costPriceUSD + shippingUSD;
+  let high = low * 10;
 
-  // for (let i = 0; i < 100; i++) {
-  //   const mid = (low + high) / 2;
+  const tolerance = 0.0001;
 
-  //   // 手数料計算
-  //   const {
-  //     totalFeesUSD,
-  //   } = calculateFees(mid, categoryFeePercent, paymentFeePercent);
-
-  //   const netSellingUSD = mid - totalFeesUSD;
-
-  //   // 両替手数料をUSDに換算 (JPY換算してからUSDに戻す形)
-  //   const exchangeFeeUSD = (netSellingUSD * EXCHANGE_FEE_PER_USD) / exchangeRateUSDtoJPY;
-
-  //   const netSellingAfterExchangeUSD = netSellingUSD - exchangeFeeUSD;
-
-  //   const totalCostUSD = costPriceUSD + shippingUSD;
-
-  //   const profitUSD = netSellingAfterExchangeUSD - totalCostUSD;
-
-  //   const currentProfitRate = profitUSD / totalCostUSD;
-
-  //   if (Math.abs(currentProfitRate - targetProfitRate) < tolerance) {
-  //     const priceJPY = Math.ceil(mid * exchangeRateUSDtoJPY * 100) / 100;
-  //     return { priceUSD: mid, priceJPY };
-  //   }
-
-  //   if (currentProfitRate < targetProfitRate) {
-  //     low = mid;
-  //   } else {
-  //     high = mid;
-  //   }
-  // }
-
-  // const finalPriceJPY = Math.ceil(low * exchangeRateUSDtoJPY * 100) / 100;
-  // return { priceUSD: low, priceJPY: finalPriceJPY };
-  // 便宜上USD ⇔ JPY変換の補助
-  // const toJPY = (usd:number) => usd * exchangeRateUSDtoJPY;
-  // const toUSD = (jpy:number) => jpy / exchangeRateUSDtoJPY;
-
-  // // 探索範囲 (税抜USD売値Sの下限/上限)
-  // const costPriceUSD = toUSD(costPrice);
-  // const shippingPriceUSD = toUSD(shippingJPY);
-  // let low = Math.max(1, costPriceUSD + shippingPriceUSD); // 下限は原価＋送料相当以上 
-  // let high = low * 10;
-
-  // const tolerance = 1e-6;
-
-  // // 目標利益率(税抜売上ベース)を満たす税抜売値Sを二分探索
-  // for(let i = 0; i < 100; i++){
-  //   const S = (low + high) / 2;             // 税抜売上(USD)
-  //   const R = S * (1 + STATE_TAX_RATE);     //州税込売上(USD)
-
-  //   // 手数料は 「州税込売上ベース」で計算(finalと競合)
-  //   const { categoryFeeUSD, paymentFeeUSD, feeTaxUSD, payoneerFeeUSD} =
-  //     calculateFees(R, categoryFeePercent, paymentFeePercent);
-      
-  //   // 固定FEEもUSD側で控除
-  //   const totalFeesUSD = categoryFeeUSD + paymentFeeUSD + feeTaxUSD + payoneerFeeUSD + FINAL_VALUE_FEE;
-  //   const netSellingUSD = S - totalFeesUSD;
-
-  //   // 両替手数料 (JPY, 1USDあたり固定額)
-  //   const exchangeFeeJPY = netSellingUSD * EXCHANGE_FEE_PER_USD;
-
-  //   // 正味JPY売上　= USD正味売上をJPY化　-　両替手数料
-  //   const netSellingJPY = toJPY(netSellingUSD) - exchangeFeeJPY;
-
-  //   // 還付前利益 (JPY)
-  //   const netProfitJPY = netSellingJPY - costPrice - shippingJPY;
-    
-  //   // 還付金 (JPY)
-  //   const feeRebateJPY = feeTaxUSD * exchangeRateUSDtoJPY;
-  //   const exchangeAdjustmentJPY = (costPrice * 10) / 110;
-    
-  //   // 最終利益 (JPY)
-  //   const profitJPY = netProfitJPY + exchangeAdjustmentJPY + feeRebateJPY;
-
-  //   // 利益率 = 最終利益 / 税抜売上 (JPY)
-  //   const revenueJPYExcl = toJPY(S);
-  //   const currentProfitRate = revenueJPYExcl === 0 ? 0 : (profitJPY / revenueJPYExcl);
-
-  //   if(Math.abs(currentProfitRate - targetProfitRate) < tolerance) {
-  //     const priceUSD = S;
-  //     const priceJPY = Math.ceil(toJPY(priceUSD) * 100) / 100;
-  //     return{ priceUSD, priceJPY};
-  //   }
-  //   if(currentProfitRate < targetProfitRate) {
-  //     low = S;
-  //   } else {
-  //     high = S;
-  //   }
-  // }
-  // //　非収束時はlow側を採用
-  // const priceUSD = low;
-  // const priceJPY = Math.ceil(toJPY(priceUSD) * 100) / 100;
-  // return { priceUSD, priceJPY};
-
-  //Final の本番計算を用いて "いまの売値Sでの利益率"を評価
-  const rateFromS = (S: number) => {
-    const detail = calculateFinalProfitDetailUS({
-      sellingPrice: S,                 // 税抜USD
-      costPrice,
-      shippingJPY,
-      categoryFeePercent,
-      paymentFeePercent,
-      exchangeRateUSDtoJPY,   
-    });
-    // ※ profitMargin は "税抜分母" で算出されている前提 (%表記)
-    return detail.profitMargin / 100; //0～1 に変換
-  };
-
-  // 探索範囲:指数的に上限を広げて「目標に到達する価格帯」を見つける
-  let low = 1;
-  let high = 2;
-  while (rateFromS(high) < targetProfitRate && high < 1e9) {
-    high *= 2;
-  }
-
-  const tolerance = 1e-6;
-  for(let i = 0; i < 100; i++){
+  for (let i = 0; i < 100; i++) {
     const mid = (low + high) / 2;
-    const r = rateFromS(mid);
-    if(Math.abs(r - targetProfitRate) < tolerance) {
-      const priceUSD = mid;
-      const priceJPY = Math.ceil(toJPY(priceUSD) * 100) / 100; // 表示用の丸めのみ
-    return { priceUSD, priceJPY};
+
+    // 手数料計算
+    const {
+      totalFeesUSD,
+    } = calculateFees(mid, categoryFeePercent, paymentFeePercent);
+
+    const netSellingUSD = mid - totalFeesUSD;
+
+    // 両替手数料をUSDに換算 (JPY換算してからUSDに戻す形)
+    const exchangeFeeUSD = (netSellingUSD * EXCHANGE_FEE_PER_USD) / exchangeRateUSDtoJPY;
+
+    const netSellingAfterExchangeUSD = netSellingUSD - exchangeFeeUSD;
+
+    const totalCostUSD = costPriceUSD + shippingUSD;
+
+    const profitUSD = netSellingAfterExchangeUSD - totalCostUSD;
+
+    const currentProfitRate = profitUSD / totalCostUSD;
+
+    if (Math.abs(currentProfitRate - targetProfitRate) < tolerance) {
+      const priceJPY = Math.ceil(mid * exchangeRateUSDtoJPY * 100) / 100;
+      return { priceUSD: mid, priceJPY };
     }
-    if (r < targetProfitRate) low = mid; else high = mid;
+
+    if (currentProfitRate < targetProfitRate) {
+      low = mid;
+    } else {
+      high = mid;
+    }
   }
-  // 収束しきらない場合も中央値で返す (十分近い)
-  const priceUSD = (low + high) / 2;
-  const priceJPY = Math.ceil(toJPY(priceUSD) * 100) / 100;
-  return { priceUSD, priceJPY};
+
+  const finalPriceJPY = Math.ceil(low * exchangeRateUSDtoJPY * 100) / 100;
+  return { priceUSD: low, priceJPY: finalPriceJPY };
 }
-/**
- * カテゴリ手数料額を計算する (US)
- */
-// export function calculateCategoryFeeUS(
-//   sellingPrice: number,
-//   categoryFeePercent: number
-// ): number {
-//   return sellingPrice * (categoryFeePercent / 100);
-// }
 
-/**
- * 配送料（USD）をJPYに換算する
- */
-// export function convertShippingPriceToJPY(
-//   shippingPriceUSD: number,
-//   exchangeRateUSDtoJPY: number
-// ): number {
-//   return shippingPriceUSD * exchangeRateUSDtoJPY;
-// }
-
-/**
- * 実費合計を計算する
- */
-// export function calculateActualCost(
-//   costPrice: number,
-//   shippingJPY: number,
-//   categoryFeeJPY: number
-// ): number {
-//   return costPrice + shippingJPY + categoryFeeJPY;
-// }
-
-/**
- * 粗利を計算する
- */
-// export function calculateGrossProfit(
-//   sellingPriceJPY: number,
-//   actualCostJPY: number
-// ): number {
-//   return sellingPriceJPY - actualCostJPY;
-// }
-
-/**
- * 利益率を計算する
- */
-// export function calculateProfitMargin(
-//   grossProfit: number,
-//   sellingPrice: number
-// ): number {
-//   if (sellingPrice === 0) return 0;
-//   return (grossProfit / sellingPrice) * 100;
-// }
