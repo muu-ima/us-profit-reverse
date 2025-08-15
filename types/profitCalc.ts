@@ -29,7 +29,7 @@ export interface FinalProfitDetailUS {
 
     // --- 追加（UI用）---
     sellingPriceJPY: number;
-    sellingPriceIncTaxJPY: number;
+    sellingPriceInclTaxJPY: number;
     categoryFeeJPY: number;
     paymentFeeJPY: number;
     feeTaxJPY: number;

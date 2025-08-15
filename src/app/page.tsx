@@ -55,7 +55,7 @@ export default function Page() {
   const [resultUSD, setResultUSD] = useState<{ priceUSD: number; priceJPY: number } | null>(null);
   const [result, setResult] = useState<ShippingResult | null>(null);
   const [calcResult, setCalcResult] = useState<CalcResult | null>(null);
-  const [_finalProfitDetail, setFinalProfitDetail] = useState<FinalProfitDetailUS | null>(null);
+  // const [finalProfitDetail, setFinalProfitDetail] = useState<FinalProfitDetailUS | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [final, setFinal] = useState<FinalProfitDetailUS | null>(null);
 
@@ -152,10 +152,23 @@ export default function Page() {
     // sellingPrice は USD単価にする（税抜）
     const sellingPrice = priceUSD.priceUSD;
 
-    //ここでcalcResultがある場合はcategoryFeePercentを逆算
+    // ここでcalcResultを計算して保存
+    const newCalcResult: CalcResult = {
+      shippingJPY: shippingJPY,
+      categoryFeeJPY: (sellingPrice * rate) * (categoryFeePercent / 100),
+      actualCost: costPriceJPY + shippingJPY,
+      grossProfit: (sellingPrice * rate) - (costPriceJPY + shippingJPY),
+      profitMargin: targetProfitRateNumber * 100, // %
+      method: result?.method ?? "",
+      rate: rate,
+      sellingPriceJPY: sellingPrice * rate
+    };
+    setCalcResult(newCalcResult);
+
+    // ここでcalcResultがある場合はcategoryFeePercentを逆算
     let categoryFeePercentCalc = categoryFeePercent;
-    if(calcResult && sellingPrice && rate) {
-      categoryFeePercentCalc = (calcResult.categoryFeeJPY / (sellingPrice * rate)) * 100;
+    if (newCalcResult && sellingPrice && rate) {
+      categoryFeePercentCalc = (newCalcResult.categoryFeeJPY / (sellingPrice * rate)) * 100;
     }
 
 
@@ -170,9 +183,8 @@ export default function Page() {
       targetMargin: targetProfitRateNumber,
     });
 
-    console.log("finalProfitDetails: 計算されたfinalProfitDetails",finalProfitDetails);
+    console.log("finalProfitDetails: 計算されたfinalProfitDetails", finalProfitDetails);
 
-    setFinalProfitDetail(finalProfitDetails);
     setFinal(finalProfitDetails);
 
     setIsModalOpen(true); // 必要に応じてモーダルを開くなど
@@ -310,8 +322,11 @@ export default function Page() {
           <label className="block font-semibold mb-1">カテゴリ手数料 </label>
           <select
             value={selectedCategoryFee}
-            onChange={(e) => setSelectedCategoryFee(Number(e.target.value))}
-            className="w-full px-3 py-2 border rounded-md"
+            onChange={(e) => {
+              const v = e.target.value;
+              setSelectedCategoryFee(v === "" ? "" : Number(v));
+            }}
+             className="w-full px-3 py-2 border rounded-md"
           >
             <option value="">カテゴリを選択してください</option>
             {categoryOptions.map((cat) => (
