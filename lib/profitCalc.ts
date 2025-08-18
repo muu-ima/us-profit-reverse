@@ -188,7 +188,7 @@ export function calculateSellingPriceFromProfitRateWithFees({
 
     const currentProfitRate = profitUSD / totalCostUSD;
 
-    console.log("Iteeration:", i,{
+    console.log("Iteration:", i,{
       mid,
       totalFeesUSD,
       netSellingUSD,
