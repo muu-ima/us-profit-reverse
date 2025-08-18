@@ -66,11 +66,6 @@ export default function FinalResult({
               <span className="text-2xl font-bold text-gray-900">￥{data.profitJPY.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
             </div>
           </div>
-
-          <div className="flex justify-between items-center border-t pt-4">
-            <span className="text-gray-700 font-medium">利益率</span>
-            <span className="text-2xl font-bold text-green-600">{data.profitMargin.toFixed(2)}%</span>
-          </div>
         </div>
 
 

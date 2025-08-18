@@ -120,7 +120,6 @@ export default function Page() {
     });
 
     if (costPrice === "" || weight === null || rate === null) return;
-    console.log("handleCalculate: 入力不足", { costPrice, weight, rate });
     const shippingJPY = result?.price ?? 0;
     const categoryFeePercent = Number(selectedCategoryFee) || 0;
     const paymentFeePercent = 1.35;
