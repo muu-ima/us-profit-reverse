@@ -143,8 +143,6 @@ export function calculateFinalProfitDetailUS({
  * 目標利益率から販売価格（USD）を逆算する関数
  */
 
-const MAX_PRICE_USD = 800; // ←固定上限
-
 export function calculateSellingPriceFromProfitRateWithFees({
   costPrice,
   shippingJPY,
@@ -190,6 +188,16 @@ export function calculateSellingPriceFromProfitRateWithFees({
 
     const currentProfitRate = profitUSD / totalCostUSD;
 
+    console.log("Iteeration:", i,{
+      mid,
+      totalFeesUSD,
+      netSellingUSD,
+      exchangeFeeUSD,
+      netSellingAfterExchangeUSD,
+      totalCostUSD,
+      profitUSD,
+      currentProfitRate,
+    }); 
     if (Math.abs(currentProfitRate - targetProfitRate) < tolerance) {
       const priceJPY = Math.ceil(mid * exchangeRateUSDtoJPY * 100) / 100;
       return { priceUSD: mid, priceJPY };
