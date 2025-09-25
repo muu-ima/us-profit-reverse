@@ -68,7 +68,6 @@ export default function FinalResult({
           </div>
         </div>
 
-
         <div className="border-t border-gray-300 my-2" />
 
         <p className="text-gray-500 text-sm">
